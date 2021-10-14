@@ -17,15 +17,26 @@
           crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/5c30380ae3.js" crossorigin="anonymous"></script>
 
+    <script>
+      document.write(
+        '<link rel="stylesheet" href="css/main.css?' + new Date().getTime() + '">'
+      );
+      </script>
+
     <title>Ytani Backgammon Clock</title>
   </head>
   <body>
     <header>
     </header>
     <main>
-      <img id="base-img" src="res/clock0.svg" style="width:100vw">
+      <div id="bg_clock"><img src="data/clock0.svg" style="width:100vw"></div>
     </main>
     <footer>
     </footer>
+    <script>
+      document.write(
+        '<script src="js/main.js?' + new Date().getTime() + '"><\/script>'
+      );
+      </script>
   </body>
 </html>
