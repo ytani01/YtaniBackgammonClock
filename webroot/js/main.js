@@ -19,14 +19,14 @@
  *    |
  *    +- BgClockImage .. have a image, mouse handlers
  *    |    |
- *    |    +- OnBoardImage .. on board
+ *    |    +- OnClockImage .. on board
  *    |    |    |
- *    |    |    +- OnBoardButton
+ *    |    |    +- OnClockButton
  *    |    |    |    |
- *    |    |    |    +- InverseButton
- *    |    |    |    +- ResignButton
+ *    |    |    |    +- InverseButton XXX
+ *    |    |    |    +- ResignButton XXX
  *    |    |    |    |
- *    |    |    |    +- EmitButton
+ *    |    |    |    +- EmitButton XXX
  *    |    |    |         |
  *    |    |    |         +- BackButton
  *    |    |    |         +- Back2Button
@@ -280,7 +280,7 @@ class BgClockImage extends BgClockBase {
         super(id, x, y, deg, w, h);
 
         this.image_parent_dir = "data";
-        this.image_suffix = ".svg";
+        // this.image_suffix = ".svg";
 
         this.image_el = this.el.children[0];
         this.image_dir = this.get_image_dir();
@@ -355,6 +355,58 @@ class BgClockImage extends BgClockBase {
 /**
  *
  */
+class OnClockImage extends BgClockImage {
+    constructor(id, board, x, y, deg=0) {
+        super(id, x, y, deg, undefined, undefined);
+        this.board = board;
+    } // OnClockImage.constructor()
+} // class OnClockImage
+
+/**
+ *
+ */
+class OnClockButton extends OnClockImage {
+    constructor(id, board, x, y, deg=0) {
+        super(id, board, x, y, deg);
+    }
+} // class OnClockButton
+
+/**
+ *
+ */
+class StartButton extends OnClockButton {
+    constructor(id, board, x, y) {
+        super(id, board, x, y);
+    } // StartButton.constructor()
+
+    on_mouse_down_xy(x, y) {
+        console.log(`StartButton: (${x}, ${y})`);
+        this.board.test_timer.start();
+    } // StartButton.on_mouse_down_xy()
+} // class StartButton
+
+/**
+ *
+ */
+class PauseButton extends OnClockButton {
+    constructor(id, board, x, y) {
+        super(id, board, x, y);
+    } // PauseButton.constructor()
+
+    on_mouse_down_xy(x, y) {
+        console.log(`PauseButton: (${x}, ${y})`);
+
+        if ( this.board.test_timer.active ) {
+            this.board.test_timer.pause();
+        } else {
+            this.board.test_timer.resume();
+        }
+    } // PauseButton.on_mouse_down_xy()
+} // class PauseButton
+
+/**
+ *
+ */
 class BgClock extends BgClockImage {
     /*
      * @param {string} id - div tag id
@@ -374,6 +426,17 @@ class BgClock extends BgClockImage {
             new PlayerClock(this.delay_msec[0], this.limit_msec[0]),
             new PlayerClock(this.delay_msec[1], this.limit_msec[1])
         ];
+
+        this.test_timer = new CountDownTimer(10000);
+
+        const update_clock = () => {
+            this.test_timer.update();
+        };
+        setInterval(update_clock, 50);
+        
+        this.button1 = new StartButton("button1", this, 100, 100);
+        this.button2 = new PauseButton("button2", this, 160, 100);
+
         
         this.active = false;
     } // BgClock.constructor()
@@ -467,10 +530,11 @@ class CountDownTimer {
     constructor(msec) {
         console.log(`CountDownTimer(msec=${msec})`);
 
-        this.msec = msec;
-        this.msec0 = msec;
+        this.msec = msec;  // remain
+        this.msec0 = msec; // initial value
         this.active = false;
         this.start_msec = undefined;
+        this.start_time = undefined;
     } // CountDownTimer.constructor()
 
     /**
@@ -485,7 +549,8 @@ class CountDownTimer {
      */
     update() {
         if ( this.active ) {
-            this.msec = this.msec0 - ((new Date().getTime()) - this.start_msec);
+            this.msec =
+                this.start_msec - ((new Date().getTime()) - this.start_time);
         }
         console.log(`msec=${this.msec}`);
         return this.msec;
@@ -499,7 +564,8 @@ class CountDownTimer {
             return;
         }
 
-        this.start_msec = new Date().getTime();
+        this.start_time = new Date().getTime();
+        this.start_msec = this.msec;
         this.active = true;
     } // CountDownTimer.resume()
     
@@ -507,6 +573,7 @@ class CountDownTimer {
      *
      */
     pause() {
+        this.update();
         this.active = false;
     } // CountDownTimer.pause()
 
@@ -515,6 +582,8 @@ class CountDownTimer {
      */
     reset() {
         this.msec = this.msec0;
+        this.start_msec = this.msec;
+        this.start_time = new Date().getTime();
         return this.msec;
     } // CountDownTimer.reset()
     
@@ -523,6 +592,7 @@ class CountDownTimer {
      */
     start() {
         this.reset();
+        this.update();
         return this.resume();
     } // CountDownTimer.start()
 
