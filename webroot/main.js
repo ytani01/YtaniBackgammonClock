@@ -2,22 +2,22 @@
  *=====================================================
  * [Class inheritance tree]
  *
- * BgClockBase .. have (x, y, w, h), without image
+ * MyBase .. have (x, y, w, h), without image
  *    |
- *    +- BgClockText .. have a text
+ *    +- TextBase .. have a text
  *    |    |
- *    |    +- BoardText .. on board
+ *    |    +- OnClockText .. on board
  *    |         |
  *    |         +- ClockLimit
  *    |         |
  *    |         +- PlayerText .. owned by player
  *    |              |
- *    |              +- PlayerClock
+ *    |              +- PlayerTimer
  *    |              +- PlayerName
  *    |              +- PlayerPipCount
  *    |              +- PlayerScore
  *    |
- *    +- BgClockImage .. have a image, mouse handlers
+ *    +- ImageBase .. have a image, mouse handlers
  *    |    |
  *    |    +- OnClockImage .. on board
  *    |    |    |
@@ -48,13 +48,15 @@
  *    |    |
  *    |    +- BgClock
  *    |         
- *    +- BgClockButtonArea
+ *    +- OnClockArea .. on clock
+ *         |
+ *         +- PlayerArea
  *
  * CountDownTimer .. sec, start, stop
  *   |
- *   +- DelayTime
+ *   +- DelayTimer
  *   |
- *   +- LimitTime
+ *   +- LimitTimer
  *
  * SoundBase .. play audio
  *
@@ -72,7 +74,7 @@ const SOUND_ALART2 = "";
 /**
  * base class for Ytani Backgammon Clock
  */
-class BgClockBase {
+class MyBase {
     /**
      * @param {string} id
      * @param {number} x, y
@@ -99,6 +101,10 @@ class BgClockBase {
         }
 
         if ( this.el ) {
+            this.move(this.x, this.y);
+            this.rotate(this.deg);
+            //this.el.style.width = this.w + "px";
+            //this.el.style.height = this.h + "px";
             this.el.onmousedown = this.on_mouse_down.bind(this);
             this.el.ontouchstart = this.on_mouse_down.bind(this);
             this.el.onmouseup = this.on_mouse_up.bind(this);
@@ -107,7 +113,7 @@ class BgClockBase {
             this.el.ontouchmove = this.on_mouse_move.bind(this);
             this.el.ondragstart = this.null_handler.bind(this);
         }
-    } // BgClockBase.constructor()
+    } // MyBase.constructor()
 
     /**
      * @param {number} x
@@ -137,7 +143,7 @@ class BgClockBase {
             this.el.style.left = this.x + "px";
             this.el.style.top = this.y + "px";
         }
-    } // BgClockBase.move()
+    } // MyBase.move()
 
     /**
      * @param {number} z
@@ -145,7 +151,7 @@ class BgClockBase {
     set_z(z) {
         this.z = z;
         this.el.style.zIndex = this.z;
-    } // BgClockBase.set_z()
+    } // MyBase.set_z()
 
     /**
      * @param {number} deg
@@ -161,7 +167,7 @@ class BgClockBase {
         this.el.style.transitionTimingFunction = "linear";
         this.el.style.transitionDuration = sec + "s";
         this.el.style.transform = `rotate(${this.deg}deg)`;
-    } // BgClockBase.rotate()
+    } // MyBase.rotate()
 
     /**
      * @param {number} x
@@ -169,7 +175,7 @@ class BgClockBase {
      */
     on_mouse_down_xy(x, y) {
         // to be overridden
-    } // BgClockBase.on_mouse_down_xy()
+    } // MyBase.on_mouse_down_xy()
 
     /**
      * @param {number} x
@@ -177,7 +183,7 @@ class BgClockBase {
      */
     on_mouse_up_xy(x, y) {
         // to be overridden
-    } // BgClockBase.on_mouse_down_xy()
+    } // MyBase.on_mouse_down_xy()
 
     /**
      * @param {number} x
@@ -185,7 +191,7 @@ class BgClockBase {
      */
     on_mouse_move_xy(x, y) {
         // to be overridden
-    } // BgClockBase.on_mouse_down_xy()
+    } // MyBase.on_mouse_down_xy()
 
     /**
      * touch event to mouse event
@@ -194,13 +200,13 @@ class BgClockBase {
      * @param {MouseEvent} e
      */
     touch2mouse(e) {
-        // console.log(`BgClockBase.touch2mouse()`);
+        // console.log(`MyBase.touch2mouse()`);
         e.preventDefault();
         if ( e.changedTouches ) {
             e = e.changedTouches[0];
         }
         return e;
-    } // BgClockBase.touch2mouse()
+    } // MyBase.touch2mouse()
     
     /**
      * only for get_xy() function
@@ -216,7 +222,7 @@ class BgClockBase {
         }
         
         return [w - e.pageX + origin_x, h - e.pageY + origin_y];
-    } // BgClockBase.inverse_xy()
+    } // MyBase.inverse_xy()
 
     /**
      * @param {MouseEvent} e
@@ -238,7 +244,7 @@ class BgClockBase {
             [x, y] = this.inverse_xy(e);
         }
         return [x, y];
-    } // BgClockBase.get_xy()
+    } // MyBase.get_xy()
 
     /**
      * @param {MouseEvent} e
@@ -246,7 +252,7 @@ class BgClockBase {
     on_mouse_down(e) {
         let [x, y] = this.get_xy(e);
         this.on_mouse_down_xy(x, y);
-    } // BgClockBase.on_mouse_down()
+    } // MyBase.on_mouse_down()
 
     /**
      * @param {MouseEvent} e
@@ -254,7 +260,7 @@ class BgClockBase {
     on_mouse_up(e) {
         let [x, y] = this.get_xy(e);
         this.on_mouse_up_xy(x, y);
-    } // BgClockBase.on_mouse_up()
+    } // MyBase.on_mouse_up()
 
     /**
      * @param {MouseEvent} e
@@ -262,20 +268,111 @@ class BgClockBase {
     on_mouse_move(e) {
         let [x, y] = this.get_xy(e);
         this.on_mouse_move_xy(x, y);
-    } // BgClockBase.on_mouse_move()
+    } // MyBase.on_mouse_move()
 
     /**
      * @param {MouseEvent} e
      */
     null_handler(e) {
         return false;
-    } // BgClockBase.null_handler()
-} // class BgClockBase
+    } // MyBase.null_handler()
+} // class MyBase
+
+/**
+ * <div id="${id}">text</div>
+ */
+class TextBase extends MyBase {
+    /**
+     *
+     */
+    constructor(id, x, y, deg, text="",
+                size="30px", family="sans-serif", weight="bolder") {
+        super(id, x, y, deg, undefined, undefined);
+
+        this.text = text;
+
+        if ( this.el ) {
+            this.el.innerHTML = this.text;
+            // this.el.style.left = this.x + "px";
+            // this.el.style.top = this.y + "px";
+            this.el.style.transformOrigin = "top left";
+            this.el.style.transform = `rotate(${this.deg}deg)`;
+            this.el.style.fontSize = size;
+            this.el.style.fontFamily = family;
+            this.el.style.fontWeight = weight;
+            this.el.style.lineHeight = 1.0;
+            this.w = this.el.clientWidth;
+            this.h = this.el.clientHeight;
+        }
+    } // TextBase.constructor()
+
+    /**
+     *
+     */
+    get() {
+        if ( this.el === undefined ) {
+            return "";
+        }
+
+        this.text = this.el.innerHTML;
+        return this.text;
+    } // TextBase.get()
+
+    /**
+     *
+     */
+    set(txt) {
+        if ( this.el === undefined ) {
+            return;
+        }
+
+        this.el.innerHTML = "";
+        if ( txt.length > 0 ) {
+            this.text = txt;
+            this.el.innerHTML = this.text;
+        }
+        this.w = this.el.clientWidth;
+        this.h = this.el.clientHeight;
+        this.move(this.x, this.y);
+        this.rotate(this.deg);
+    } // TextBase.set()
+
+    /**
+     *
+     */
+    on() {
+        if ( this.el ) {
+            this.el.style.opacity = 1;
+        }
+    } // TextBase.on()
+
+    /**
+     *
+     */
+    off() {
+        if ( this.el ) {
+            this.el.style.opacity = 0;
+        }
+    } // TextBase.off()
+} // class TextBase
+
+/**
+ *
+ */
+class OnClockText extends TextBase {
+    /**
+     *
+     */
+    constructor(id, parent, x, y, deg) {
+        super(id, x, y, deg, "");
+        this.parent = parent;
+    } // OnClockText.constructor()
+} // class OnClockText
 
 /**
  * <div id="${id}"><image src="${image_dir}/..${image_suffix}"></div>
  */
-class BgClockImage extends BgClockBase {
+class ImageBase extends MyBase {
     constructor(id, x, y, deg=0, w=undefined, h=undefined) {
         super(id, x, y, deg, w, h);
 
@@ -302,7 +399,7 @@ class BgClockImage extends BgClockBase {
         this.move(this.x, this.y, false);
 
         this.e = undefined; // MouseEvent
-    } // BgClockImage.constructor()
+    } // ImageBase.constructor()
 
     /**
      * 
@@ -321,7 +418,7 @@ class BgClockImage extends BgClockBase {
         console.log(`image_dir=${image_dir}`);
 
         return image_dir;
-    } // BgClockImage.get_image_dir()
+    } // ImageBase.get_image_dir()
 
     /**
      * @param {number} w
@@ -333,7 +430,7 @@ class BgClockImage extends BgClockBase {
 
         this.el.style.width = `${this.w}px`;
         this.el.style.height = `${this.h}px`;
-    } // BgClockImage.set_wh()
+    } // ImageBase.set_wh()
 
     /**
      * 
@@ -341,7 +438,7 @@ class BgClockImage extends BgClockBase {
     on() {
         this.active = true;
         this.el.hidden = false;
-    } // BgClockImage.on()
+    } // ImageBase.on()
 
     /**
      * 
@@ -349,16 +446,16 @@ class BgClockImage extends BgClockBase {
     off() {
         this.active = false;
         this.el.hidden = true;
-    } // BgClockImage.off()
-} // class BgClockImage
+    } // ImageBase.off()
+} // class ImageBase
 
 /**
  *
  */
-class OnClockImage extends BgClockImage {
-    constructor(id, board, x, y, deg=0) {
+class OnClockImage extends ImageBase {
+    constructor(id, parent, x, y, deg=0) {
         super(id, x, y, deg, undefined, undefined);
-        this.board = board;
+        this.parent = parent;
     } // OnClockImage.constructor()
 } // class OnClockImage
 
@@ -366,8 +463,9 @@ class OnClockImage extends BgClockImage {
  *
  */
 class OnClockButton extends OnClockImage {
-    constructor(id, board, x, y, deg=0) {
-        super(id, board, x, y, deg);
+    constructor(id, parent, x, y, deg=0) {
+        super(id, parent, x, y, deg);
+        this.set_z(100);
     }
 } // class OnClockButton
 
@@ -375,13 +473,13 @@ class OnClockButton extends OnClockImage {
  *
  */
 class StartButton extends OnClockButton {
-    constructor(id, board, x, y) {
-        super(id, board, x, y);
+    constructor(id, parent, x, y) {
+        super(id, parent, x, y);
     } // StartButton.constructor()
 
     on_mouse_down_xy(x, y) {
         console.log(`StartButton: (${x}, ${y})`);
-        this.board.test_timer.start();
+        this.parent.player[0].delay_timer.start();
     } // StartButton.on_mouse_down_xy()
 } // class StartButton
 
@@ -389,17 +487,17 @@ class StartButton extends OnClockButton {
  *
  */
 class PauseButton extends OnClockButton {
-    constructor(id, board, x, y) {
-        super(id, board, x, y);
+    constructor(id, parent, x, y) {
+        super(id, parent, x, y);
     } // PauseButton.constructor()
 
     on_mouse_down_xy(x, y) {
         console.log(`PauseButton: (${x}, ${y})`);
 
-        if ( this.board.test_timer.active ) {
-            this.board.test_timer.pause();
+        if ( this.parent.player[0].delay_timer.active ) {
+            this.parent.player[0].delay_timer.pause();
         } else {
-            this.board.test_timer.resume();
+            this.parent.player[0].delay_timer.resume();
         }
     } // PauseButton.on_mouse_down_xy()
 } // class PauseButton
@@ -407,7 +505,7 @@ class PauseButton extends OnClockButton {
 /**
  *
  */
-class BgClock extends BgClockImage {
+class BgClock extends ImageBase {
     /*
      * @param {string} id - div tag id
      * @param {number} x - 
@@ -422,17 +520,30 @@ class BgClock extends BgClockImage {
         this.delay_msec = [12000, 12000];
         this.limit_msec = [12 * 60000, 12 * 60000];
         
-        this.player_clock = [
-            new PlayerClock(this.delay_msec[0], this.limit_msec[0]),
-            new PlayerClock(this.delay_msec[1], this.limit_msec[1])
-        ];
+        let p_area_w = 500;
+        let p_area_h = 650;
 
-        this.test_timer = new CountDownTimer(10000);
+        this.player = [
+            new PlayerArea("p1", this, 200, 20, p_area_w, p_area_h),
+            new PlayerArea("p2", this, 200, p_area_h + 10, p_area_w, p_area_h)
+        ]
+
+        /*
+        this.p1 = new MyBase("p1", 0, 0);
+        this.p1delay = new DelayTimer(12, "p1delay", 600, 300, 90);
+        this.p1limit = new LimitTimer(120, "p1limit", 400, 100, 90);
+        */
+
+        /*
+        this.p2 = new MyBase("p2", 0, 0);
+        this.p2delay = new DelayTimer(12, "p2delay", 600, 900, 90);
+        this.p2limit = new LimitTimer(120, "p2limit", 400, 700, 90);
+        */
 
         const update_clock = () => {
-            this.test_timer.update();
+            this.player[0].delay_timer.update();
         };
-        setInterval(update_clock, 50);
+        setInterval(update_clock, 10);
         
         this.button1 = new StartButton("button1", this, 100, 100);
         this.button2 = new PauseButton("button2", this, 160, 100);
@@ -453,15 +564,15 @@ class BgClock extends BgClockImage {
      *
      */
     change_turn() {
-        this.player_clock[this.turn].update();
-        this.player_clock[this.turn].pause();
-        console.log(`${this.player_clock[this.turn].str()}`);
+        this.player_timer[this.turn].update();
+        this.player_timer[this.turn].pause();
+        console.log(`${this.player_timer[this.turn].str()}`);
 
         this.set_turn(1 - this.turn);
         if ( this.active ) {
-            this.player_clock[this.turn].start();
+            this.player_timer[this.turn].start();
         }
-        console.log(`${this.player_clock[this.turn].str()}`);
+        console.log(`${this.player_timer[this.turn].str()}`);
     } // BgClock.change_turn()
 
     /**
@@ -469,7 +580,7 @@ class BgClock extends BgClockImage {
      */
     resume() {
         this.active = true;
-        this.player_clock[this.turn].start();
+        this.player_timer[this.turn].start();
     } // BgClock.start()
 
     /**
@@ -477,8 +588,8 @@ class BgClock extends BgClockImage {
      */
     pause() {
         this.active = false;
-        this.player_clock[0].pause();
-        this.player_clock[1].pause();
+        this.player_timer[0].pause();
+        this.player_timer[1].pause();
     }
     
 } // class BgClock
@@ -486,12 +597,44 @@ class BgClock extends BgClockImage {
 /**
  *
  */
-class BgClockArea extends BgClockBase {
+class OnClockArea extends MyBase {
     constructor(id, bg_clock, x, y, w, h) {
         super(id, x, y, 0, w, h);
         this.bg_clock = bg_clock;
+
+        this.el.style.width = this.w + "px";
+        this.el.style.height = this.h + "px";
+        
+        console.log(`this.w=${this.w}, ${this.el.style.width}`);
     } // BgClockArea.constructor()
-} // class BgClockArea
+} // class OnClockArea
+
+/**
+ *
+ */
+class PlayerArea extends OnClockArea {
+    /**
+     * @param {string} player - player id string ex. "p1" or "p2"
+     * 
+     */
+    constructor(player, bg_clock, x, y, w, h) {
+        super(player, bg_clock, x, y, w, h);
+        console.log(`this.w=${this.w}`);
+
+        this.player = player;
+
+        this.delay_timer = new DelayTimer(12, player + "delay", 400, 200, 90);
+        this.limit_timer = new LimitTimer(12 * 60, player + "limit", 200, 50, 90);
+    } // PlayerArea.constructor()
+
+    on_mouse_down_xy(x, y) {
+        this.el.style.backgroundColor = "#ff0";
+    }
+
+    on_mouse_up_xy(x, y) {
+        this.el.style.backgroundColor = "transparent";
+    }
+} // class PlayerArea
 
 /**
  *
@@ -549,10 +692,10 @@ class CountDownTimer {
      */
     update() {
         if ( this.active ) {
-            this.msec =
-                this.start_msec - ((new Date().getTime()) - this.start_time);
+            this.msec
+                = this.start_msec - ((new Date().getTime()) - this.start_time);
         }
-        console.log(`msec=${this.msec}`);
+        //console.log(`msec=${this.msec}`);
         return this.msec;
     } // CountDownTimer.get()
 
@@ -608,89 +751,100 @@ class CountDownTimer {
 /**
  *
  */
-class PlayerClock {
+class DelayTimer extends CountDownTimer {
     /**
      *
      */
-    constructor(delay_msec, limit_msec) {
-        console.log(`PlayerClock(`
-                    + `delay_msec=${delay_msec}, `
-                    + `limit_msec=${limit_msec})`);
+    constructor(sec, id, x, y, deg=0) {
+        super(sec * 1000);
 
-        this.delay_msec0 = delay_msec;
-        this.limit_msec0 = limit_msec;
-        this.delay_timer = new CountDownTimer(this.delay_msec0);
-        this.limit_timer = new CountDownTimer(this.limit_msec0);
-    } // PlayerClock.constructor()
+        this.base = new MyBase(id, x, y, deg);
+        this.text1 = new TextBase(id + "_1", 0, 0, 0, "000", "120px");
+        this.text2 = new TextBase(id + "_2", 0, 0, 0, "00", "60px");
+        console.log(`text1.w=${this.text1.w}`);
+        this.text2.move(this.text1.w + 2, this.text1.h - this.text2.h);
+        this.setStr();
+    } // DelayTimer.constructor()
 
     /**
      *
-     */
-    set(delay_msec, limit_msec) {
-        this.delay_timer.set(delay_msec);
-        this.limit_timer.set(limit_msec);
-    } // PlayerClock.set()
-
-    /**
-     * update
      */
     update() {
-        let delay_msec = this.delay_timer.update();
-        let limit_msec = this.limit_timer.update();
-
-        if ( delay_msec < 0 ) {
-            limit_msec += delay_msec;
-            delay_msec = 0;
-
-            this.delay_timer.msec = delay_msec;
-            this.limit_timer.msec = limit_msec;
-
-            if ( this.delay_timer.active ) {
-                this.delay_timer.pause();
-                this.limit_timer.resume();
-            }
-        }
-
-        console.log(`(${delay_msec}, ${limit_msec})`);
-        return {"delay": delay_msec, "limit": limit_msec};
-    } // PlayerClock.get()
-
-    /**
-     *
-     */
-    resume() {
-        if ( this.delay_timer.msec > 0 ) {
-            this.delay_timer.resume();
-        } else {
-            this.limit_timer.resume();
-        }
+        super.update();
+        this.setStr();
     }
 
     /**
      *
      */
-    pause() {
-        this.delay_timer.pause();
-        this.limit_timer.pause();
+    setStr() {
+        let sec = Math.floor(this.msec / 1000);
+        let sec2 = Math.floor((this.msec - sec * 1000) / 10);
+        //console.log(`sec2=${sec2}`);
+
+        this.text1.set(('000' + sec).slice(-3));
+        this.text2.set(('00' + sec2).slice(-2));
+    } // CountDownTimer.setStr()
+} // class CountDownTimer
+
+/**
+ *
+ */
+class LimitTimer extends CountDownTimer {
+    /**
+     *
+     */
+    constructor(sec, id, x, y, deg=0) {
+        super(sec * 1000);
+
+        this.base = new MyBase(id, x, y, deg);
+        this.text1 = new TextBase(id + "_1", 0, 0, 0, "00:00", "150px");
+        this.text2 = new TextBase(id + "_2", 0, 0, 0, "00", "75px");
+        this.text2.move(this.text1.w + 2, this.text1.h - this.text2.h);
+        this.setStr();
+    } // DelayTimer.constructor()
+
+    /**
+     *
+     */
+    update() {
+        super.update();
+        this.setStr();
     }
 
     /**
      *
      */
-    start() {
-        this.update();
-        this.pause();
-        this.delay_timer.reset();
-        this.resume();
-    }
+    setStr() {
+        let sec = Math.floor(this.msec / 1000);
+        let sec2 = Math.floor((this.msec - sec * 1000) / 10);
+        //console.log(`sec2=${sec2}`);
+        let min = Math.floor(sec / 60);
+        sec = sec - min * 60;
+
+        let min_str = ('00' + min).slice(-2);
+        let sec_str = ('00' + sec).slice(-2);
+        let sec2_str = ('00' + sec2).slice(-2);
+
+        this.text1.set(`${min_str}:${sec_str}`);
+        this.text2.set(sec2_str);
+    } // CountDownTimer.setStr()
 
     /**
      *
      */
-    str() {
-        return `(${this.delay_timer.msec}, ${this.limit_timer.msec})`;
-    }
-} // class PlayerClock
+    toStr() {
+        let sec = this.msec / 1000;
+        let min = Math.floor(sec / 60);
+        sec = sec - min * 60;
+
+        min = ('00' + min).slice(-3);
+        sec = ('0' + sec.toFixed(2)).slice(-5);
+
+        let timer_str = `${min}:${sec}`;
+        return timer_str;
+    } // CountDownTimer.toStr()
+} // class CountDownTimer
 
 /**
  *
@@ -699,8 +853,5 @@ window.onload = () => {
     console.log(`window.onload()>start`);
 
     // initialize Clock
-    bg_clock = new BgClock("bg_clock", 5, 10);
-
-    bg_clock.player_clock[0].set(12000, 12*60000);
-    bg_clock.player_clock[1].set(12000, 12*60000);
+    bg_clock = new BgClock("bg_clock", 5, 5);
 }; // window.onload
