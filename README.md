@@ -1,5 +1,8 @@
 # YtaniBackgammonClock
 
-Backgammmon Clock
+Simple Backgammmon Clock
 
-##
+## 概要
+
+囲碁将棋・チェス用の対局時計アプリは、いろいろとあるのですが、バックギャモンで使う場合、余分な機能も多く、設定が面倒だったりするものが多いので、シンプルで使いやすいものを目指してます。
+

@@ -654,7 +654,7 @@ class ClockBase extends ImageBase {
         this.button2.set_z(100);
 
         this.delay_sec = [12, 12];
-        this.limit_sec = [1 * 60, 12 * 60];
+        this.limit_sec = [12 * 60, 12 * 60];
         let p_area_w = 500;
         let p_area_h = 650;
 
