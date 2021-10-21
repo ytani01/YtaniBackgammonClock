@@ -46,7 +46,7 @@
  *    |    |         |    +- ResignBannerButton
  *    |    |         |    +- WinButton
  *    |    |
- *    |    +- BgClock
+ *    |    +- ClockBase
  *    |         
  *    +- OnClockArea .. on clock
  *         |
@@ -65,8 +65,10 @@
 const MY_NAME = "Ytani Backgammon Clock";
 const VERSION = "0.01";
 
-let GlobalSoundSwitch = undefined;
-const SOUND_PUSH = "";
+const UPDATE_INTERVAL = 27; // msec
+
+const SOUND_PUSH1 = "data/push1.mp3";
+const SOUND_PUSH2 = "data/push2.mp3";
 const SOUND_TICK = "";
 const SOUND_ALART1 = "";
 const SOUND_ALART2 = "";
@@ -465,39 +467,37 @@ class OnClockImage extends ImageBase {
 class OnClockButton extends OnClockImage {
     constructor(id, parent, x, y, deg=0) {
         super(id, parent, x, y, deg);
-        this.set_z(100);
     }
 } // class OnClockButton
 
 /**
  *
  */
-class StartButton extends OnClockButton {
-    constructor(id, parent, x, y) {
-        super(id, parent, x, y);
-    } // StartButton.constructor()
+class ResetButton extends OnClockButton {
+    constructor(id, parent, x, y, deg=0) {
+        super(id, parent, x, y, deg);
+    } // ResetButton.constructor()
 
     on_mouse_down_xy(x, y) {
-        console.log(`StartButton: (${x}, ${y})`);
-        this.parent.player[0].delay_timer.start();
-    } // StartButton.on_mouse_down_xy()
-} // class StartButton
+        console.log(`${this.constructor.name}: (${x}, ${y})`);
+        for (let i=0; i < 2; i++) {
+            this.parent.player[i].reset();
+        }
+    } // ResetButton.on_mouse_down_xy()
+} // class ResetButton
 
 /**
  *
  */
 class PauseButton extends OnClockButton {
-    constructor(id, parent, x, y) {
-        super(id, parent, x, y);
+    constructor(id, parent, x, y, deg=0) {
+        super(id, parent, x, y, deg);
     } // PauseButton.constructor()
 
     on_mouse_down_xy(x, y) {
-        console.log(`PauseButton: (${x}, ${y})`);
-
-        if ( this.parent.player[0].delay_timer.active ) {
-            this.parent.player[0].delay_timer.pause();
-        } else {
-            this.parent.player[0].delay_timer.resume();
+        console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y})`);
+        for (let i=0; i < 2; i++) {
+            this.parent.player[i].pause();
         }
     } // PauseButton.on_mouse_down_xy()
 } // class PauseButton
@@ -505,60 +505,197 @@ class PauseButton extends OnClockButton {
 /**
  *
  */
-class BgClock extends ImageBase {
+class OnClockArea extends MyBase {
+    constructor(id, clock_base, x, y, w, h) {
+        super(id, x, y, 0, w, h);
+        this.clock_base = clock_base;
+
+        this.el.style.width = this.w + "px";
+        this.el.style.height = this.h + "px";
+        
+        console.log(`this.w=${this.w}, ${this.el.style.width}`);
+    } // ClockBaseArea.constructor()
+} // class OnClockArea
+
+/**
+ *
+ */
+class PlayerArea extends OnClockArea {
+    /**
+     * @param {string} player - player id string ex. "p1" or "p2"
+     * 
+     */
+    constructor(clock_base, player, delay_sec, limit_sec, x, y, w, h) {
+        super(player, clock_base, x, y, w, h);
+        console.log(`this.w=${this.w}`);
+
+        this.clock_base = clock_base;
+        this.player = player;
+        this.delay_sec = delay_sec;
+        this.limit_sec = limit_sec;
+
+        this.active = false;
+        this.timerout = false;
+        this.opponent = undefined;
+
+        this.delay_timer = new DelayTimer(this.delay_sec, player + "delay", 400, 200, 90);
+        this.limit_timer = new LimitTimer(this.limit_sec, player + "limit", 200, 50, 90);
+    } // PlayerArea.constructor()
+
+    /**
+     *
+     */
+    set_opponent(player_area) {
+        this.opponent = player_area;
+    } // PlayerArea.set_opponent
+    
+    /**
+     *
+     */
+    pause() {
+        this.active = false;
+        this.delay_timer.pause();
+        this.limit_timer.pause();
+    } // PlayerArea.pause();
+
+    /**
+     *
+     */
+    resume() {
+        this.active = true;
+        if ( this.delay_timer.msec > 0 ) {
+            this.delay_timer.resume();
+        } else {
+            this.limit_timer.resume();
+        }
+    } // PlayerArea.resume()
+
+    /**
+     *
+     */
+    reset() {
+        this.active = false;
+        this.delay_timer.reset();
+        this.limit_timer.reset();
+    }
+
+    /**
+     *
+     */
+    update() {
+        if ( this.delay_timer.active ) {
+            this.delay_timer.update();
+            if (this.delay_timer.msec <= 0) {
+                this.delay_timer.pause();
+                this.limit_timer.msec += this.delay_timer.msec;
+                console.log(`${this.delay_timer.msec}, ${this.limit_timer.msec}`);
+
+                this.delay_timer.msec = 0;
+                this.delay_timer.update();
+                console.log(`${this.delay_timer.msec}`);
+
+                this.limit_timer.resume();
+            }
+        }
+        if ( this.limit_timer.active ) {
+            this.limit_timer.update();
+            if ( this.limit_timer.msec <= 0 ) {
+                this.limit_timer.pause();
+                this.limit_timer.msec = 0;
+                this.limit_timer.update();
+                this.timeout = true;
+            }
+        }
+    } // PlayerArea.update()
+
+    on_mouse_down_xy(x, y) {
+        console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y})`);
+        this.el.style.backgroundColor = "#ff0";
+
+        if ( this.active || ( ! this.active && ! this.opponent.active ) ) {
+            this.pause();
+            /*
+            this.delay_timer.reset();
+            this.update();
+            */
+            this.opponent.delay_timer.reset();
+            this.opponent.resume();
+            this.clock_base.sound_push1.play();
+        } else {
+            this.clock_base.sound_push2.play();
+        }
+    } // PlayerArea.on_mouse_down_xy()
+
+    on_mouse_up_xy(x, y) {
+        console.log(`${this.constructor.name}.on_mouse_up_xy(${x}, ${y})`);
+        this.el.style.backgroundColor = "transparent";
+    } // PlayerArea.on_mouse_up_xy()
+} // class PlayerArea
+
+/**
+ *
+ */
+class ClockBase extends ImageBase {
     /*
      * @param {string} id - div tag id
      * @param {number} x - 
      * @param {number} y - 
      */
-    constructor(id, x, y) {
-        console.log(`BgClock(id=${id},x=${x},y=${y})`);
-        super(id, x, y, 0, undefined, undefined);
+    constructor(id, x, y, w=undefined, h=undefined) {
+        console.log(`ClockBase(${id},${x},${y},${w},${h})`);
+        super(id, x, y, 0, w, h);
 
         this.turn = 0;
 
-        this.delay_msec = [12000, 12000];
-        this.limit_msec = [12 * 60000, 12 * 60000];
-        
+        this.button1 = new ResetButton("button1", this, 80, 600);
+        this.button1.rotate(90, true);
+        this.button1.set_z(100);
+        this.button2 = new PauseButton("button2", this, 80, 800);
+        this.button2.set_z(100);
+
+        this.delay_sec = [12, 12];
+        this.limit_sec = [1 * 60, 12 * 60];
         let p_area_w = 500;
         let p_area_h = 650;
 
         this.player = [
-            new PlayerArea("p1", this, 200, 20, p_area_w, p_area_h),
-            new PlayerArea("p2", this, 200, p_area_h + 10, p_area_w, p_area_h)
-        ]
+            new PlayerArea(this, "p1",
+                           this.delay_sec[0], this.limit_sec[0],
+                           200, 20, p_area_w, p_area_h),
+            new PlayerArea(this, "p2",
+                           this.delay_sec[1], this.limit_sec[1],
+                           200, p_area_h + 10, p_area_w, p_area_h)
+        ];
+        this.player[0].set_opponent(this.player[1]);
+        this.player[1].set_opponent(this.player[0]);
 
-        /*
-        this.p1 = new MyBase("p1", 0, 0);
-        this.p1delay = new DelayTimer(12, "p1delay", 600, 300, 90);
-        this.p1limit = new LimitTimer(120, "p1limit", 400, 100, 90);
-        */
+        for (let i=0; i < 2; i++) {
+            this.player[i].set_z(101);
+        }
 
-        /*
-        this.p2 = new MyBase("p2", 0, 0);
-        this.p2delay = new DelayTimer(12, "p2delay", 600, 900, 90);
-        this.p2limit = new LimitTimer(120, "p2limit", 400, 700, 90);
-        */
+        this.sound_push1 = new SoundBase(this, SOUND_PUSH1);
+        this.sound_push2 = new SoundBase(this, SOUND_PUSH2);
 
-        const update_clock = () => {
-            this.player[0].delay_timer.update();
-        };
-        setInterval(update_clock, 10);
-        
-        this.button1 = new StartButton("button1", this, 100, 100);
-        this.button2 = new PauseButton("button2", this, 160, 100);
-
+        this.sound_switch = true;
         
         this.active = false;
-    } // BgClock.constructor()
+    } // ClockBase.constructor()
 
+    /**
+     * ??
+     */
+    load_allsounds() {
+        this.sound_push1.audio.load();
+        this.sound_push2.audio.load();
+    }
+    
     /**
      * @param {number} player - 0 or 1
      */
     set_turn(player) {
         this.turn = player;
         return this.turn;
-    } // BgClock.set_turn()
+    } // ClockBase.set_turn()
 
     /**
      *
@@ -573,7 +710,7 @@ class BgClock extends ImageBase {
             this.player_timer[this.turn].start();
         }
         console.log(`${this.player_timer[this.turn].str()}`);
-    } // BgClock.change_turn()
+    } // ClockBase.change_turn()
 
     /**
      *
@@ -581,7 +718,7 @@ class BgClock extends ImageBase {
     resume() {
         this.active = true;
         this.player_timer[this.turn].start();
-    } // BgClock.start()
+    } // ClockBase.start()
 
     /**
      *
@@ -592,58 +729,16 @@ class BgClock extends ImageBase {
         this.player_timer[1].pause();
     }
     
-} // class BgClock
-
-/**
- *
- */
-class OnClockArea extends MyBase {
-    constructor(id, bg_clock, x, y, w, h) {
-        super(id, x, y, 0, w, h);
-        this.bg_clock = bg_clock;
-
-        this.el.style.width = this.w + "px";
-        this.el.style.height = this.h + "px";
-        
-        console.log(`this.w=${this.w}, ${this.el.style.width}`);
-    } // BgClockArea.constructor()
-} // class OnClockArea
-
-/**
- *
- */
-class PlayerArea extends OnClockArea {
-    /**
-     * @param {string} player - player id string ex. "p1" or "p2"
-     * 
-     */
-    constructor(player, bg_clock, x, y, w, h) {
-        super(player, bg_clock, x, y, w, h);
-        console.log(`this.w=${this.w}`);
-
-        this.player = player;
-
-        this.delay_timer = new DelayTimer(12, player + "delay", 400, 200, 90);
-        this.limit_timer = new LimitTimer(12 * 60, player + "limit", 200, 50, 90);
-    } // PlayerArea.constructor()
-
-    on_mouse_down_xy(x, y) {
-        this.el.style.backgroundColor = "#ff0";
-    }
-
-    on_mouse_up_xy(x, y) {
-        this.el.style.backgroundColor = "transparent";
-    }
-} // class PlayerArea
+} // class ClockBase
 
 /**
  *
  */
 class SoundBase {
-    constructor(bg_clock, soundfile) {
+    constructor(clock_base, soundfile) {
         console.log("SoundBase("
                     + `soundfile=${soundfile}`);
-        this.bg_clock = bg_clock;
+        this.clock_base = clock_base;
         this.soundfile = soundfile;
         this.audio = new Audio(this.soundfile);
     } // SoundBase.constructor()
@@ -652,11 +747,17 @@ class SoundBase {
      * 
      */
     play() {
-        console.log(`SoundBase.play>`
-                    + `GlobalSoundSwitch=${GlobalSoundSwitch}`);
-        if ( this.bg_clock.sound && GlobalSoundSwitch === undefined ) {
+        if ( this.clock_base.sound_switch ) {
             console.log(`soundfile=${this.soundfile}`);
-            return this.audio.play();
+
+            // 以下、黒魔術 !?
+            let a = this.audio;
+            setTimeout(function() {
+                a.play();
+            }, 1);
+            this.clock_base.load_allsounds(); // 何故か必要!?
+
+            return true;
         } else {
             return false;
         }
@@ -726,7 +827,7 @@ class CountDownTimer {
     reset() {
         this.msec = this.msec0;
         this.start_msec = this.msec;
-        this.start_time = new Date().getTime();
+        this.pause();
         return this.msec;
     } // CountDownTimer.reset()
     
@@ -846,12 +947,28 @@ class LimitTimer extends CountDownTimer {
     } // CountDownTimer.toStr()
 } // class CountDownTimer
 
+let clockBase;
+
+/**
+ *
+ */
+const update_clock = () => {
+    for (let i=0; i < 2; i++) {
+        if ( clockBase.player[i].active ) {
+            clockBase.player[i].update();
+        }
+    }
+};
+
 /**
  *
  */
 window.onload = () => {
     console.log(`window.onload()>start`);
 
-    // initialize Clock
-    bg_clock = new BgClock("bg_clock", 5, 5);
+    clockBase = new ClockBase("clock_base", 5, 5,
+                               document.documentElement.clientWidth,
+                               document.documentElement.clientHeight);
+    
+    setInterval(update_clock, UPDATE_INTERVAL);
 }; // window.onload
