@@ -6,7 +6,11 @@
  *
  * MyBase .. basic class
  *    |
- *    +- TextBase .. have a text
+ *    +- TextBase
+ *    |
+ *    +- ModeButton
+ *    |
+ *    +- SetButton
  *    |
  *    +- ClockBase
  *    |         
@@ -295,6 +299,7 @@ class SetButton extends MyBase {
         console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
                     + `mode=${this.parent.mode}`);
         let target_val = this.target_timer.msec0;
+        let prev_target_val = target_val;
         console.log(`target_val=${target_val}`);
 
         if ( this.updown == "up" ) {
@@ -308,6 +313,9 @@ class SetButton extends MyBase {
                 target_val -= 1000;
             } else {
                 target_val -= 30 * 1000;
+            }
+            if ( target_val <= 0 ) {
+                target_val = prev_target_val;
             }
         }
         console.log(`target_val=${target_val}`);
@@ -570,6 +578,7 @@ class PlayerArea extends MyBase {
                 this.limit_timer.msec = 0;
                 this.limit_timer.update();
                 this.timeout = true;
+                this.parent.mode = "PAUSE";
             }
             this.el.style.backgroundColor = '#FCC';
         }
