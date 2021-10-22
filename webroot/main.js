@@ -7,23 +7,10 @@
  * MyBase .. basic class
  *    |
  *    +- TextBase .. have a text
- *    |    |
- *    |    +- OnClockText
  *    |
- *    +- ImageBase .. have a image
- *    |    |
- *    |    +- OnClockImage
- *    |    |    |
- *    |    |    +- OnClockButton
- *    |    |         |
- *    |    |         +- ResetButton
- *    |    |         +- PauseButton
- *    |    |
- *    |    +- ClockBase
+ *    +- ClockBase
  *    |         
- *    +- OnClockArea
- *         |
- *         +- PlayerArea
+ *    +- PlayerArea
  *
  * CountDownTimer
  *   |
@@ -65,35 +52,16 @@ const SOUND_ALART2 = "";
  */
 class MyBase {
     /**
-     * @param {string} id
-     * @param {number} x, y
-     * @param {number} deg
-     * @param {number} w, h
+     *
      */
-    constructor(id, x, y, deg=0, w=undefined, h=undefined) {
-        [this.x, this.y] = [x, y];
-        [this.w, this.h] = [w, h];
-        this.deg = deg;
+    constructor(id) {
         this.id = id;
+        console.log(`id=${this.id}`);
         
-        if ( this.id !== undefined && this.id.length > 0 ) {
-            this.el = document.getElementById(this.id);
-        } else {
-            this.el = undefined;
-        }
-
-        if ( w === undefined && this.el ) {
-            this.w = this.el.clientWidth;
-        }
-        if ( h === undefined && this.el ) {
-            this.h = this.el.clientHeight;
-        }
+        this.el = document.getElementById(this.id);
+        console.log(`style=${this.el.style}`);
 
         if ( this.el ) {
-            this.move(this.x, this.y);
-            this.rotate(this.deg);
-            //this.el.style.width = this.w + "px";
-            //this.el.style.height = this.h + "px";
             this.el.onmousedown = this.on_mouse_down.bind(this);
             this.el.ontouchstart = this.on_mouse_down.bind(this);
             this.el.onmouseup = this.on_mouse_up.bind(this);
@@ -105,36 +73,6 @@ class MyBase {
     } // MyBase.constructor()
 
     /**
-     * @param {number} x
-     * @param {number} y
-     * @return {boolean}
-     */
-    in_this(x, y) {
-        return (x >= this.x) && (x < this.x + this.w)
-            && (y >= this.y) && (y < this.y + this.h);
-    }
-
-    /**
-     * @param {number} x
-     * @param {number} y
-     * @param {boolean} center - center flag
-     * @param {number} sec
-     */
-    move(x, y, center=false, sec=0) {
-        [this.x, this.y] = [x, y];
-
-        this.el.style.transitionTimingFunction = "linear";
-        this.el.style.transitionDuration = sec + "s";
-        if ( center ) {
-            this.el.style.left = (this.x - this.w / 2) + "px";
-            this.el.style.top = (this.y - this.h / 2) + "px";
-        } else {
-            this.el.style.left = this.x + "px";
-            this.el.style.top = this.y + "px";
-        }
-    } // MyBase.move()
-
-    /**
      * @param {number} z
      */
     set_z(z) {
@@ -143,20 +81,24 @@ class MyBase {
     } // MyBase.set_z()
 
     /**
-     * @param {number} deg
+     *
      */
-    rotate(deg, center=false, sec=0) {
-        //console.log(`rotate(deg=${deg}, center=${center}, sec=${sec})`);
-        this.deg = deg;
-        if ( center ) {
-            this.el.style.transformOrigin = "center center";
-        } else {
-            this.el.style.transformOrigin = "top left";
+    on(z=1000) {
+        if ( this.el ) {
+            this.el.style.opacity = 1;
+            this.set_z(z);
         }
-        this.el.style.transitionTimingFunction = "linear";
-        this.el.style.transitionDuration = sec + "s";
-        this.el.style.transform = `rotate(${this.deg}deg)`;
-    } // MyBase.rotate()
+    } // MyBase.on()
+
+    /**
+     *
+     */
+    off() {
+        if ( this.el ) {
+            this.el.style.opacity = 0;
+            this.set_z(0);
+        }
+    } // MyBase.off()
 
     /**
      * @param {number} x
@@ -202,20 +144,7 @@ class MyBase {
      */
     get_xy(e) {
         e = this.touch2mouse(e);
-        let [origin_x, origin_y] = [this.x, this.y];
-        if ( this.board ) {
-            [origin_x, origin_y] = [this.board.x, this.board.y];
-        }
-        
-        let [x, y] = [e.pageX - origin_x, e.pageY - origin_y];
-
-        let player = this.player;
-        if ( this.board) {
-            player = this.board.player;
-        }
-        if ( player == 1 ) {
-            [x, y] = this.inverse_xy(e);
-        }
+        let [x, y] = [e.pageX, e.pageY];
         return [x, y];
     } // MyBase.get_xy()
 
@@ -224,6 +153,7 @@ class MyBase {
      */
     on_mouse_down(e) {
         let [x, y] = this.get_xy(e);
+
         this.on_mouse_down_xy(x, y);
     } // MyBase.on_mouse_down()
 
@@ -258,24 +188,12 @@ class TextBase extends MyBase {
     /**
      *
      */
-    constructor(id, x, y, deg, text="",
-                size="30px", family="sans-serif", weight="bolder") {
-        super(id, x, y, deg, undefined, undefined);
-
+    constructor(id, text=undefined) {
+        super(id);
         this.text = text;
 
-        if ( this.el ) {
+        if ( this.el && this.text ) {
             this.el.innerHTML = this.text;
-            // this.el.style.left = this.x + "px";
-            // this.el.style.top = this.y + "px";
-            this.el.style.transformOrigin = "top left";
-            this.el.style.transform = `rotate(${this.deg}deg)`;
-            this.el.style.fontSize = size;
-            this.el.style.fontFamily = family;
-            this.el.style.fontWeight = weight;
-            this.el.style.lineHeight = 1.0;
-            this.w = this.el.clientWidth;
-            this.h = this.el.clientHeight;
         }
     } // TextBase.constructor()
 
@@ -283,210 +201,121 @@ class TextBase extends MyBase {
      *
      */
     get() {
-        if ( this.el === undefined ) {
-            return "";
+        if ( this.el ) {
+            return this.el.innerHTML;
         }
-
-        this.text = this.el.innerHTML;
-        return this.text;
+        return "";
     } // TextBase.get()
 
     /**
      *
      */
     set(txt) {
-        if ( this.el === undefined ) {
-            return;
+        if ( this.el && txt ) {
+            this.el.innerHTML = txt;
         }
-
-        this.el.innerHTML = "";
-        if ( txt.length > 0 ) {
-            this.text = txt;
-            this.el.innerHTML = this.text;
-        }
-        this.w = this.el.clientWidth;
-        this.h = this.el.clientHeight;
-        this.move(this.x, this.y);
-        this.rotate(this.deg);
     } // TextBase.set()
 
-    /**
-     *
-     */
-    on() {
-        if ( this.el ) {
-            this.el.style.opacity = 1;
-        }
-    } // TextBase.on()
-
-    /**
-     *
-     */
-    off() {
-        if ( this.el ) {
-            this.el.style.opacity = 0;
-        }
-    } // TextBase.off()
 } // class TextBase
 
 /**
  *
  */
-class OnClockText extends TextBase {
+class ModeButton extends MyBase {
+    constructor(parent, id,) {
+        super(id);
+        this.parent = parent;
+    } // ModeButton.constructor()
+
+    on_mouse_down_xy(x, y) {
+        console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
+                    + `mode=${this.parent.mode}`);
+        this.parent.ud_button.forEach(btn => {
+            btn.off();
+        });
+
+        if ( this.parent.mode == "READY" ) {
+            this.parent.mode = "SET";
+            this.parent.ud_button.forEach(btn => {
+                btn.on();
+            });
+
+        } else if ( this.parent.mode == "SET" ) {
+            this.parent.mode = "READY";
+        } else if ( this.parent.mode == "p0" || this.parent.mode == "p1" ) {
+            this.parent.mode = "PAUSE";
+            for (let i=0; i < 2; i++) {
+                this.parent.player[i].pause();
+            }
+        } else if ( this.parent.mode == "PAUSE" ) {
+            this.parent.mode = "READY";
+            for (let i=0; i < 2; i++) {
+                this.parent.player[i].reset();
+            }
+        } else {
+            console.log(`${this.constructor.name}.on_mouse_xy():`
+                        + `unknown mode:${this.parent.mode}`);
+        }
+        console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
+                    + `mode->${this.parent.mode}`);
+    } // ModeButton.on_mouse_down_xy()
+} // class ModeButton
+
+/**
+ *
+ */
+class SetButton extends MyBase {
     /**
      *
      */
-    constructor(id, parent, x, y, deg) {
-        super(id, x, y, deg, "");
+    constructor(parent, player, timer, updown) {
+        super(`${player}-${timer}-${updown}`);
+
         this.parent = parent;
-    } // OnClockText.constructor()
-} // class OnClockText
+        this.timer = timer;
+        this.player = player;
+        this.updown = updown;
 
-/**
- * <div id="${id}"><image src="${image_dir}/..${image_suffix}"></div>
- */
-class ImageBase extends MyBase {
-    constructor(id, x, y, deg=0, w=undefined, h=undefined) {
-        super(id, x, y, deg, w, h);
+        this.player_idx = Number(player.slice(-1));
+        console.log(`player_idx=${this.player_idx}`);
 
-        this.image_parent_dir = "data";
-        // this.image_suffix = ".svg";
-
-        this.image_el = this.el.children[0];
-        this.image_dir = this.get_image_dir();
-
-        if ( w === undefined ) {
-            this.w = this.image_el.width;
+        if ( this.timer == "delay" ) {
+            this.target_timer = this.parent.player[this.player_idx].delay_timer;
+        } else {
+            this.target_timer = this.parent.player[this.player_idx].limit_timer;
         }
-        if ( h === undefined ) {
-            this.h = this.image_el.height;
-        }
+        // console.log(`target_timer=${this.target_timer}`);
 
-        this.el.style.width = `${this.w}px`;
-        this.el.style.height = `${this.h}px`;
-  
-        this.active = true;
-        this.el.hidden = false;
-        this.el.draggable = false;
-
-        this.move(this.x, this.y, false);
-
-        this.e = undefined; // MouseEvent
-    } // ImageBase.constructor()
+    } // SetButton.constructor()
 
     /**
-     * 
+     *
      */
-    get_image_dir() {
-        const image_src = this.image_el.src;
-        console.log(`image_src=${image_src}`);
-        const index1 = image_src.indexOf(this.image_parent_dir);
-        console.log(`index1=${index1}`);
-        const index2 = image_src.indexOf("/", index1+1);
-        console.log(`index2=${index2}`);
-        const index3 = image_src.indexOf("/", index2+1);
-        console.log(`index3=${index3}`);
-
-        const image_dir = image_src.slice(index1, index3+1);
-        console.log(`image_dir=${image_dir}`);
-
-        return image_dir;
-    } // ImageBase.get_image_dir()
-
-    /**
-     * @param {number} w
-     * @param {number} h
-     */
-    set_wh(w, h) {
-        this.w = w;
-        this.h = h;
-
-        this.el.style.width = `${this.w}px`;
-        this.el.style.height = `${this.h}px`;
-    } // ImageBase.set_wh()
-
-    /**
-     * 
-     */
-    on() {
-        this.active = true;
-        this.el.hidden = false;
-    } // ImageBase.on()
-
-    /**
-     * 
-     */
-    off() {
-        this.active = false;
-        this.el.hidden = true;
-    } // ImageBase.off()
-} // class ImageBase
-
-/**
- *
- */
-class OnClockImage extends ImageBase {
-    constructor(id, parent, x, y, deg=0) {
-        super(id, x, y, deg, undefined, undefined);
-        this.parent = parent;
-    } // OnClockImage.constructor()
-} // class OnClockImage
-
-/**
- *
- */
-class OnClockButton extends OnClockImage {
-    constructor(id, parent, x, y, deg=0) {
-        super(id, parent, x, y, deg);
-    }
-} // class OnClockButton
-
-/**
- *
- */
-class ResetButton extends OnClockButton {
-    constructor(id, parent, x, y, deg=0) {
-        super(id, parent, x, y, deg);
-    } // ResetButton.constructor()
-
     on_mouse_down_xy(x, y) {
-        console.log(`${this.constructor.name}: (${x}, ${y})`);
-        for (let i=0; i < 2; i++) {
-            this.parent.player[i].reset();
+        console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
+                    + `mode=${this.parent.mode}`);
+        let target_val = this.target_timer.msec0;
+        console.log(`target_val=${target_val}`);
+
+        if ( this.updown == "up" ) {
+            if ( this.timer == "delay" ) {
+                target_val += 1000;
+            } else {
+                target_val += 30 * 1000;
+            }
+        } else {
+            if ( this.timer == "delay" ) {
+                target_val -= 1000;
+            } else {
+                target_val -= 30 * 1000;
+            }
         }
-    } // ResetButton.on_mouse_down_xy()
-} // class ResetButton
-
-/**
- *
- */
-class PauseButton extends OnClockButton {
-    constructor(id, parent, x, y, deg=0) {
-        super(id, parent, x, y, deg);
-    } // PauseButton.constructor()
-
-    on_mouse_down_xy(x, y) {
-        console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y})`);
-        for (let i=0; i < 2; i++) {
-            this.parent.player[i].pause();
-        }
-    } // PauseButton.on_mouse_down_xy()
-} // class PauseButton
-
-/**
- *
- */
-class OnClockArea extends MyBase {
-    constructor(id, clock_base, x, y, w, h) {
-        super(id, x, y, 0, w, h);
-        this.clock_base = clock_base;
-
-        this.el.style.width = this.w + "px";
-        this.el.style.height = this.h + "px";
-        
-        console.log(`this.w=${this.w}, ${this.el.style.width}`);
-    } // OnClockArea.constructor()
-} // class OnClockArea
+        console.log(`target_val=${target_val}`);
+        this.target_timer.msec0 = target_val;
+        this.target_timer.msec = target_val;
+        this.target_timer.setStr();
+    } // SetButton.on_mouse_down_xy()
+} // class SetButton
 
 /**
  *
@@ -580,14 +409,12 @@ class DelayTimer extends CountDownTimer {
     /**
      *
      */
-    constructor(sec, id, x, y, deg=0) {
+    constructor(player, sec=12) {
         super(sec * 1000);
 
-        this.base = new MyBase(id, x, y, deg);
-        this.text1 = new TextBase(id + "_1", 0, 0, 0, "000", "130px");
-        this.text2 = new TextBase(id + "_2", 0, 0, 0, "00", "70px");
-        console.log(`text1.w=${this.text1.w}`);
-        this.text2.move(this.text1.w + 2, this.text1.h - this.text2.h);
+        this.text1 = new TextBase(player + "-delay-sec");
+        this.text2 = new TextBase(player + "-delay-sec2");
+        console.log(`${this.text1.get()} ${this.text2.get()}`);
         this.setStr();
     } // DelayTimer.constructor()
 
@@ -619,13 +446,11 @@ class LimitTimer extends CountDownTimer {
     /**
      *
      */
-    constructor(sec, id, x, y, deg=0) {
+    constructor(player, sec=(12*60)) {
         super(sec * 1000);
 
-        this.base = new MyBase(id, x, y, deg);
-        this.text1 = new TextBase(id + "_1", 0, 0, 0, "00:00", "150px");
-        this.text2 = new TextBase(id + "_2", 0, 0, 0, "00", "75px");
-        this.text2.move(this.text1.w + 2, this.text1.h - this.text2.h);
+        this.text1 = new TextBase(player + "-limit-sec");
+        this.text2 = new TextBase(player + "-limit-sec2");
         this.setStr();
     } // LimitTimer.constructor()
 
@@ -659,16 +484,14 @@ class LimitTimer extends CountDownTimer {
 /**
  *
  */
-class PlayerArea extends OnClockArea {
+class PlayerArea extends MyBase {
     /**
-     * @param {string} player - player id string ex. "p1" or "p2"
-     * 
+     * @param {string} player - player id string ex. "p0" or "p1"
      */
-    constructor(clock_base, player, delay_sec, limit_sec, x, y, w, h) {
-        super(player, clock_base, x, y, w, h);
-        console.log(`this.w=${this.w}`);
+    constructor(parent, player, delay_sec, limit_sec) {
+        super(player);
 
-        this.clock_base = clock_base;
+        this.parent = parent;
         this.player = player;
         this.delay_sec = delay_sec;
         this.limit_sec = limit_sec;
@@ -677,10 +500,8 @@ class PlayerArea extends OnClockArea {
         this.timerout = false;
         this.opponent = undefined;
 
-        this.delay_timer = new DelayTimer(this.delay_sec, player + "delay",
-                                          400, 200, 90);
-        this.limit_timer = new LimitTimer(this.limit_sec, player + "limit",
-                                          200, 50, 90);
+        this.delay_timer = new DelayTimer(this.player, this.delay_sec);
+        this.limit_timer = new LimitTimer(this.player, this.limit_sec);
         this.reset();
         this.set_z(101);
     } // PlayerArea.constructor()
@@ -755,7 +576,15 @@ class PlayerArea extends OnClockArea {
     } // PlayerArea.update()
 
     on_mouse_down_xy(x, y) {
-        console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y})`);
+        console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
+                    + `mode=${this.parent.mode}`);
+        if ( this.parent.mode == "SET" ) {
+            console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
+                        + ` ... ignored`);
+            return;
+        }
+
+
         this.el.style.backgroundColor = "#4F4";
 
         if ( this.active || ( ! this.active && ! this.opponent.active ) ) {
@@ -766,9 +595,13 @@ class PlayerArea extends OnClockArea {
             */
             this.opponent.delay_timer.reset();
             this.opponent.resume();
-            this.clock_base.sound_push1.play();
+            this.parent.sound_push1.play();
+
+            this.parent.mode = this.opponent.player;
+            console.log(`${this.constructor.name}.on_mouse_down_xy():`
+                        + `mode=${this.parent.mode}`);
         } else {
-            this.clock_base.sound_push2.play();
+            this.parent.sound_push2.play();
         }
     } // PlayerArea.on_mouse_down_xy()
 
@@ -782,41 +615,58 @@ class PlayerArea extends OnClockArea {
 /**
  *
  */
-class ClockBase extends ImageBase {
+class ClockBase extends MyBase {
     /*
      * @param {string} id - div tag id
-     * @param {number} x - 
-     * @param {number} y - 
      */
-    constructor(id, x, y, w=undefined, h=undefined) {
-        console.log(`ClockBase(${id},${x},${y},${w},${h})`);
-        super(id, x, y, 0, w, h);
+    constructor(id) {
+        super(id);
 
         this.turn = 0;
 
-        this.button1 = new ResetButton("button1", this, 70, 600);
-        this.button1.rotate(90, true);
-        this.button1.set_z(100);
-        this.button2 = new PauseButton("button2", this, 70, 800);
-        this.button2.set_z(100);
-
         this.delay_sec = [12, 12];
         this.limit_sec = [12 * 60, 12 * 60];
-        let p_area_y = 30;
-        let p_area_w = 450;
-        let p_area_h = 620;
 
+        this.mode = "READY";
+
+        // players
         this.player = [
+            new PlayerArea(this, "p0",
+                           this.delay_sec[0], this.limit_sec[0]),
             new PlayerArea(this, "p1",
-                           this.delay_sec[0], this.limit_sec[0],
-                           200, p_area_y, p_area_w, p_area_h),
-            new PlayerArea(this, "p2",
-                           this.delay_sec[1], this.limit_sec[1],
-                           200, p_area_y + p_area_h + 5, p_area_w, p_area_h)
+                           this.delay_sec[1], this.limit_sec[1])
         ];
         this.player[0].set_opponent(this.player[1]);
         this.player[1].set_opponent(this.player[0]);
 
+        // buttons
+        this.btn_mode = new ModeButton(this, "btn-mode");
+
+        this.btn_p0_delay_up   = new SetButton(this, "p0", "delay", "up");
+        this.btn_p0_delay_down = new SetButton(this, "p0", "delay", "down");
+        this.btn_p0_limit_up   = new SetButton(this, "p0", "limit", "up");
+        this.btn_p0_limit_down = new SetButton(this, "p0", "limit", "down");
+        this.btn_p1_delay_up   = new SetButton(this, "p1", "delay", "up");
+        this.btn_p1_delay_down = new SetButton(this, "p1", "delay", "down");
+        this.btn_p1_limit_up   = new SetButton(this, "p1", "limit", "up");
+        this.btn_p1_limit_down = new SetButton(this, "p1", "limit", "down");
+
+        this.ud_button = [
+            this.btn_p0_delay_up,
+            this.btn_p0_delay_down,
+            this.btn_p0_limit_up,
+            this.btn_p0_limit_down,
+            this.btn_p1_delay_up,
+            this.btn_p1_delay_down,
+            this.btn_p1_limit_up,
+            this.btn_p1_limit_down
+        ];
+
+        this.ud_button.forEach(btn => {
+            btn.off();
+        });
+
+        // sounds
         this.sound_push1 = new SoundBase(this, SOUND_PUSH1);
         this.sound_push2 = new SoundBase(this, SOUND_PUSH2);
 
@@ -879,10 +729,10 @@ class ClockBase extends ImageBase {
  *
  */
 class SoundBase {
-    constructor(clock_base, soundfile) {
+    constructor(parent, soundfile) {
         console.log("SoundBase("
                     + `soundfile=${soundfile}`);
-        this.clock_base = clock_base;
+        this.parent = parent;
         this.soundfile = soundfile;
         this.audio = new Audio(this.soundfile);
     } // SoundBase.constructor()
@@ -891,7 +741,7 @@ class SoundBase {
      * 
      */
     play(mute=false) {
-        if ( this.clock_base.sound_switch ) {
+        if ( this.parent.sound_switch ) {
             console.log(`soundfile=${this.soundfile}`);
 
             // 以下、黒魔術 !?
@@ -899,7 +749,7 @@ class SoundBase {
             setTimeout(function() {
                 a.play();
             }, 1);
-            this.clock_base.load_allsounds(); // 何故か必要!?
+            this.parent.load_allsounds(); // 何故か必要!?
 
             return true;
         } else {
@@ -927,7 +777,7 @@ const update_clock = () => {
 window.onload = () => {
     console.log(`window.onload()>start`);
 
-    clockBase = new ClockBase("clock_base", 0, 0,
+    clockBase = new ClockBase("clock-base", 0, 0,
                                document.documentElement.clientWidth,
                                document.documentElement.clientHeight);
     
