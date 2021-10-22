@@ -1,64 +1,51 @@
 /**
- *=====================================================
- * [Class inheritance tree]
+ * (c)2021 Yoichi Tanibayashi
  *
- * MyBase .. have (x, y, w, h), without image
+ *=====================================================
+ * ### Class inheritance tree ###
+ *
+ * MyBase .. basic class
  *    |
  *    +- TextBase .. have a text
  *    |    |
- *    |    +- OnClockText .. on board
- *    |         |
- *    |         +- ClockLimit
- *    |         |
- *    |         +- PlayerText .. owned by player
- *    |              |
- *    |              +- PlayerTimer
- *    |              +- PlayerName
- *    |              +- PlayerPipCount
- *    |              +- PlayerScore
+ *    |    +- OnClockText
  *    |
- *    +- ImageBase .. have a image, mouse handlers
+ *    +- ImageBase .. have a image
  *    |    |
- *    |    +- OnClockImage .. on board
+ *    |    +- OnClockImage
  *    |    |    |
  *    |    |    +- OnClockButton
- *    |    |    |    |
- *    |    |    |    +- InverseButton XXX
- *    |    |    |    +- ResignButton XXX
- *    |    |    |    |
- *    |    |    |    +- EmitButton XXX
- *    |    |    |         |
- *    |    |    |         +- BackButton
- *    |    |    |         +- Back2Button
- *    |    |    |         +- BackAllButton
- *    |    |    |         +- FwdButton 
- *    |    |    |         +- Fwd2Button 
- *    |    |    |         +- FwdAllButton 
- *    |    |    |
- *    |    |    +- PlayerItem .. owned by player
  *    |    |         |
- *    |    |         +- ScoreButton
- *    |    |         |
- *    |    |         +- BannerButton
- *    |    |         |    |
- *    |    |         |    +- RollButton
- *    |    |         |    +- PassButton
- *    |    |         |    +- ResignBannerButton
- *    |    |         |    +- WinButton
+ *    |    |         +- ResetButton
+ *    |    |         +- PauseButton
  *    |    |
  *    |    +- ClockBase
  *    |         
- *    +- OnClockArea .. on clock
+ *    +- OnClockArea
  *         |
  *         +- PlayerArea
  *
- * CountDownTimer .. sec, start, stop
+ * CountDownTimer
  *   |
  *   +- DelayTimer
- *   |
  *   +- LimitTimer
  *
  * SoundBase .. play audio
+ *
+ *
+ * ### has-a tree ###
+ *
+ * ClockBase
+ *   |
+ *   +- ResetButton
+ *   +- PauseButton
+ *   |
+ *   +- PlayerArea
+ *   |    |
+ *   |    +- DelayTimer
+ *   |    +- LimitTimer
+ *   |
+ *   +- SoundBase
  *
  *=====================================================
  */
@@ -210,22 +197,6 @@ class MyBase {
         return e;
     } // MyBase.touch2mouse()
     
-    /**
-     * only for get_xy() function
-     *
-     * @param {MouseEvent} e
-     */
-    inverse_xy(e) {
-        let [origin_x, origin_y] = [this.x, this.y];
-        let [w, h] = [this.w, this.h];
-        if ( this.board ) {
-            [origin_x, origin_y] = [this.board.x, this.board.y];
-            [w, h] = [this.board.w, this.board.h];
-        }
-        
-        return [w - e.pageX + origin_x, h - e.pageY + origin_y];
-    } // MyBase.inverse_xy()
-
     /**
      * @param {MouseEvent} e
      */
@@ -514,8 +485,176 @@ class OnClockArea extends MyBase {
         this.el.style.height = this.h + "px";
         
         console.log(`this.w=${this.w}, ${this.el.style.width}`);
-    } // ClockBaseArea.constructor()
+    } // OnClockArea.constructor()
 } // class OnClockArea
+
+/**
+ *
+ */
+class CountDownTimer {
+    /**
+     *
+     */
+    constructor(msec) {
+        console.log(`CountDownTimer(msec=${msec})`);
+
+        this.msec = msec;  // remain
+        this.msec0 = msec; // initial value
+        this.active = false;
+        this.start_msec = undefined;
+        this.start_time = undefined;
+    } // CountDownTimer.constructor()
+
+    /**
+     *
+     */
+    set(msec) {
+        this.msec = msec;
+    } // CountDownTimer.set()
+
+    /**
+     *
+     */
+    update() {
+        if ( this.active ) {
+            this.msec
+                = this.start_msec - ((new Date().getTime()) - this.start_time);
+        }
+        //console.log(`msec=${this.msec}`);
+        return this.msec;
+    } // CountDownTimer.get()
+
+    /**
+     *
+     */
+    resume() {
+        if ( this.active ) {
+            return;
+        }
+
+        this.start_time = new Date().getTime();
+        this.start_msec = this.msec;
+        this.active = true;
+    } // CountDownTimer.resume()
+    
+    /**
+     *
+     */
+    pause() {
+        this.active = false;
+        this.update();
+    } // CountDownTimer.pause()
+
+    /**
+     *
+     */
+    reset() {
+        this.msec = this.msec0;
+        this.start_msec = this.msec;
+        this.pause();
+        return this.msec;
+    } // CountDownTimer.reset()
+    
+    /**
+     *
+     */
+    start() {
+        this.reset();
+        this.update();
+        return this.resume();
+    } // CountDownTimer.start()
+
+    /**
+     *
+     */
+    stop() {
+        return this.pause();
+    } // CountDownTimer.stop()
+
+} // class CountDownTimer
+
+/**
+ *
+ */
+class DelayTimer extends CountDownTimer {
+    /**
+     *
+     */
+    constructor(sec, id, x, y, deg=0) {
+        super(sec * 1000);
+
+        this.base = new MyBase(id, x, y, deg);
+        this.text1 = new TextBase(id + "_1", 0, 0, 0, "000", "120px");
+        this.text2 = new TextBase(id + "_2", 0, 0, 0, "00", "60px");
+        console.log(`text1.w=${this.text1.w}`);
+        this.text2.move(this.text1.w + 2, this.text1.h - this.text2.h);
+        this.setStr();
+    } // DelayTimer.constructor()
+
+    /**
+     *
+     */
+    update() {
+        super.update();
+        this.setStr();
+    } // DelayTimer.update()
+
+    /**
+     *
+     */
+    setStr() {
+        let sec = Math.floor(this.msec / 1000);
+        let sec2 = Math.floor((this.msec - sec * 1000) / 10);
+        //console.log(`sec2=${sec2}`);
+
+        this.text1.set(('000' + sec).slice(-3));
+        this.text2.set(('00' + sec2).slice(-2));
+    } // DelayTimer.setStr()
+} // class DelayTimer
+
+/**
+ *
+ */
+class LimitTimer extends CountDownTimer {
+    /**
+     *
+     */
+    constructor(sec, id, x, y, deg=0) {
+        super(sec * 1000);
+
+        this.base = new MyBase(id, x, y, deg);
+        this.text1 = new TextBase(id + "_1", 0, 0, 0, "00:00", "150px");
+        this.text2 = new TextBase(id + "_2", 0, 0, 0, "00", "75px");
+        this.text2.move(this.text1.w + 2, this.text1.h - this.text2.h);
+        this.setStr();
+    } // LimitTimer.constructor()
+
+    /**
+     *
+     */
+    update() {
+        super.update();
+        this.setStr();
+    } // LimitTimer.update();
+
+    /**
+     *
+     */
+    setStr() {
+        let sec = Math.floor(this.msec / 1000);
+        let sec2 = Math.floor((this.msec - sec * 1000) / 10);
+        //console.log(`sec2=${sec2}`);
+        let min = Math.floor(sec / 60);
+        sec = sec - min * 60;
+
+        let min_str = ('00' + min).slice(-2);
+        let sec_str = ('00' + sec).slice(-2);
+        let sec2_str = ('00' + sec2).slice(-2);
+
+        this.text1.set(`${min_str}:${sec_str}`);
+        this.text2.set(sec2_str);
+    } // LimitTimer.setStr()
+} // class LimitTimer
 
 /**
  *
@@ -538,8 +677,12 @@ class PlayerArea extends OnClockArea {
         this.timerout = false;
         this.opponent = undefined;
 
-        this.delay_timer = new DelayTimer(this.delay_sec, player + "delay", 400, 200, 90);
-        this.limit_timer = new LimitTimer(this.limit_sec, player + "limit", 200, 50, 90);
+        this.delay_timer = new DelayTimer(this.delay_sec, player + "delay",
+                                          400, 200, 90);
+        this.limit_timer = new LimitTimer(this.limit_sec, player + "limit",
+                                          200, 50, 90);
+        this.reset();
+        this.set_z(101);
     } // PlayerArea.constructor()
 
     /**
@@ -577,7 +720,8 @@ class PlayerArea extends OnClockArea {
         this.active = false;
         this.delay_timer.reset();
         this.limit_timer.reset();
-    }
+        this.el.style.backgroundColor = '#CFF';
+    } // PlayerArea.reset()
 
     /**
      *
@@ -596,6 +740,7 @@ class PlayerArea extends OnClockArea {
 
                 this.limit_timer.resume();
             }
+            this.el.style.backgroundColor = '#FFA';
         }
         if ( this.limit_timer.active ) {
             this.limit_timer.update();
@@ -605,12 +750,13 @@ class PlayerArea extends OnClockArea {
                 this.limit_timer.update();
                 this.timeout = true;
             }
+            this.el.style.backgroundColor = '#FCC';
         }
     } // PlayerArea.update()
 
     on_mouse_down_xy(x, y) {
         console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y})`);
-        this.el.style.backgroundColor = "#ff0";
+        this.el.style.backgroundColor = "#0f0";
 
         if ( this.active || ( ! this.active && ! this.opponent.active ) ) {
             this.pause();
@@ -629,6 +775,7 @@ class PlayerArea extends OnClockArea {
     on_mouse_up_xy(x, y) {
         console.log(`${this.constructor.name}.on_mouse_up_xy(${x}, ${y})`);
         this.el.style.backgroundColor = "transparent";
+        this.el.style.backgroundColor = '#CFF';
     } // PlayerArea.on_mouse_up_xy()
 } // class PlayerArea
 
@@ -647,31 +794,28 @@ class ClockBase extends ImageBase {
 
         this.turn = 0;
 
-        this.button1 = new ResetButton("button1", this, 80, 600);
+        this.button1 = new ResetButton("button1", this, 70, 600);
         this.button1.rotate(90, true);
         this.button1.set_z(100);
-        this.button2 = new PauseButton("button2", this, 80, 800);
+        this.button2 = new PauseButton("button2", this, 70, 800);
         this.button2.set_z(100);
 
         this.delay_sec = [12, 12];
         this.limit_sec = [12 * 60, 12 * 60];
-        let p_area_w = 500;
-        let p_area_h = 650;
+        let p_area_y = 30;
+        let p_area_w = 450;
+        let p_area_h = 620;
 
         this.player = [
             new PlayerArea(this, "p1",
                            this.delay_sec[0], this.limit_sec[0],
-                           200, 20, p_area_w, p_area_h),
+                           200, p_area_y, p_area_w, p_area_h),
             new PlayerArea(this, "p2",
                            this.delay_sec[1], this.limit_sec[1],
-                           200, p_area_h + 10, p_area_w, p_area_h)
+                           200, p_area_y + p_area_h + 5, p_area_w, p_area_h)
         ];
         this.player[0].set_opponent(this.player[1]);
         this.player[1].set_opponent(this.player[0]);
-
-        for (let i=0; i < 2; i++) {
-            this.player[i].set_z(101);
-        }
 
         this.sound_push1 = new SoundBase(this, SOUND_PUSH1);
         this.sound_push2 = new SoundBase(this, SOUND_PUSH2);
@@ -746,7 +890,7 @@ class SoundBase {
     /**
      * 
      */
-    play() {
+    play(mute=false) {
         if ( this.clock_base.sound_switch ) {
             console.log(`soundfile=${this.soundfile}`);
 
@@ -763,189 +907,6 @@ class SoundBase {
         }
     } // SoundBase.play()
 } // class SoundBase
-
-/**
- *
- */
-class CountDownTimer {
-    /**
-     *
-     */
-    constructor(msec) {
-        console.log(`CountDownTimer(msec=${msec})`);
-
-        this.msec = msec;  // remain
-        this.msec0 = msec; // initial value
-        this.active = false;
-        this.start_msec = undefined;
-        this.start_time = undefined;
-    } // CountDownTimer.constructor()
-
-    /**
-     *
-     */
-    set(msec) {
-        this.msec = msec;
-    } // CountDownTimer.set()
-
-    /**
-     *
-     */
-    update() {
-        if ( this.active ) {
-            this.msec
-                = this.start_msec - ((new Date().getTime()) - this.start_time);
-        }
-        //console.log(`msec=${this.msec}`);
-        return this.msec;
-    } // CountDownTimer.get()
-
-    /**
-     *
-     */
-    resume() {
-        if ( this.active ) {
-            return;
-        }
-
-        this.start_time = new Date().getTime();
-        this.start_msec = this.msec;
-        this.active = true;
-    } // CountDownTimer.resume()
-    
-    /**
-     *
-     */
-    pause() {
-        this.update();
-        this.active = false;
-    } // CountDownTimer.pause()
-
-    /**
-     *
-     */
-    reset() {
-        this.msec = this.msec0;
-        this.start_msec = this.msec;
-        this.pause();
-        return this.msec;
-    } // CountDownTimer.reset()
-    
-    /**
-     *
-     */
-    start() {
-        this.reset();
-        this.update();
-        return this.resume();
-    } // CountDownTimer.start()
-
-    /**
-     *
-     */
-    stop() {
-        return this.pause();
-    } // CountDownTimer.stop()
-
-} // class CountDownTimer
-
-/**
- *
- */
-class DelayTimer extends CountDownTimer {
-    /**
-     *
-     */
-    constructor(sec, id, x, y, deg=0) {
-        super(sec * 1000);
-
-        this.base = new MyBase(id, x, y, deg);
-        this.text1 = new TextBase(id + "_1", 0, 0, 0, "000", "120px");
-        this.text2 = new TextBase(id + "_2", 0, 0, 0, "00", "60px");
-        console.log(`text1.w=${this.text1.w}`);
-        this.text2.move(this.text1.w + 2, this.text1.h - this.text2.h);
-        this.setStr();
-    } // DelayTimer.constructor()
-
-    /**
-     *
-     */
-    update() {
-        super.update();
-        this.setStr();
-    }
-
-    /**
-     *
-     */
-    setStr() {
-        let sec = Math.floor(this.msec / 1000);
-        let sec2 = Math.floor((this.msec - sec * 1000) / 10);
-        //console.log(`sec2=${sec2}`);
-
-        this.text1.set(('000' + sec).slice(-3));
-        this.text2.set(('00' + sec2).slice(-2));
-    } // CountDownTimer.setStr()
-} // class CountDownTimer
-
-/**
- *
- */
-class LimitTimer extends CountDownTimer {
-    /**
-     *
-     */
-    constructor(sec, id, x, y, deg=0) {
-        super(sec * 1000);
-
-        this.base = new MyBase(id, x, y, deg);
-        this.text1 = new TextBase(id + "_1", 0, 0, 0, "00:00", "150px");
-        this.text2 = new TextBase(id + "_2", 0, 0, 0, "00", "75px");
-        this.text2.move(this.text1.w + 2, this.text1.h - this.text2.h);
-        this.setStr();
-    } // DelayTimer.constructor()
-
-    /**
-     *
-     */
-    update() {
-        super.update();
-        this.setStr();
-    }
-
-    /**
-     *
-     */
-    setStr() {
-        let sec = Math.floor(this.msec / 1000);
-        let sec2 = Math.floor((this.msec - sec * 1000) / 10);
-        //console.log(`sec2=${sec2}`);
-        let min = Math.floor(sec / 60);
-        sec = sec - min * 60;
-
-        let min_str = ('00' + min).slice(-2);
-        let sec_str = ('00' + sec).slice(-2);
-        let sec2_str = ('00' + sec2).slice(-2);
-
-        this.text1.set(`${min_str}:${sec_str}`);
-        this.text2.set(sec2_str);
-    } // CountDownTimer.setStr()
-
-    /**
-     *
-     */
-    toStr() {
-        let sec = this.msec / 1000;
-        let min = Math.floor(sec / 60);
-        sec = sec - min * 60;
-
-        min = ('00' + min).slice(-3);
-        sec = ('0' + sec.toFixed(2)).slice(-5);
-
-        let timer_str = `${min}:${sec}`;
-        return timer_str;
-    } // CountDownTimer.toStr()
-} // class CountDownTimer
 
 let clockBase;
 
@@ -966,7 +927,7 @@ const update_clock = () => {
 window.onload = () => {
     console.log(`window.onload()>start`);
 
-    clockBase = new ClockBase("clock_base", 5, 5,
+    clockBase = new ClockBase("clock_base", 0, 0,
                                document.documentElement.clientWidth,
                                document.documentElement.clientHeight);
     
