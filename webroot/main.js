@@ -584,8 +584,8 @@ class DelayTimer extends CountDownTimer {
         super(sec * 1000);
 
         this.base = new MyBase(id, x, y, deg);
-        this.text1 = new TextBase(id + "_1", 0, 0, 0, "000", "120px");
-        this.text2 = new TextBase(id + "_2", 0, 0, 0, "00", "60px");
+        this.text1 = new TextBase(id + "_1", 0, 0, 0, "000", "130px");
+        this.text2 = new TextBase(id + "_2", 0, 0, 0, "00", "70px");
         console.log(`text1.w=${this.text1.w}`);
         this.text2.move(this.text1.w + 2, this.text1.h - this.text2.h);
         this.setStr();
@@ -720,7 +720,7 @@ class PlayerArea extends OnClockArea {
         this.active = false;
         this.delay_timer.reset();
         this.limit_timer.reset();
-        this.el.style.backgroundColor = '#CFF';
+        this.el.style.backgroundColor = '#EEE';
     } // PlayerArea.reset()
 
     /**
@@ -756,7 +756,7 @@ class PlayerArea extends OnClockArea {
 
     on_mouse_down_xy(x, y) {
         console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y})`);
-        this.el.style.backgroundColor = "#0f0";
+        this.el.style.backgroundColor = "#4F4";
 
         if ( this.active || ( ! this.active && ! this.opponent.active ) ) {
             this.pause();
@@ -775,7 +775,7 @@ class PlayerArea extends OnClockArea {
     on_mouse_up_xy(x, y) {
         console.log(`${this.constructor.name}.on_mouse_up_xy(${x}, ${y})`);
         this.el.style.backgroundColor = "transparent";
-        this.el.style.backgroundColor = '#CFF';
+        this.el.style.backgroundColor = '#EEE';
     } // PlayerArea.on_mouse_up_xy()
 } // class PlayerArea
 
