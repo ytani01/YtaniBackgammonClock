@@ -41,7 +41,7 @@
  *=====================================================
  */
 const MY_NAME = "Ytani Backgammon Clock";
-const VERSION = "0.01";
+const VERSION = "0.2.0";
 
 const UPDATE_INTERVAL = 27; // msec
 
@@ -75,6 +75,25 @@ class MyBase {
             this.el.ondragstart = this.null_handler.bind(this);
         }
     } // MyBase.constructor()
+
+    /**
+     *
+     */
+    get() {
+        if ( this.el ) {
+            return this.el.innerHTML;
+        }
+        return "";
+    } // MyBase.get()
+
+    /**
+     *
+     */
+    set(txt) {
+        if ( this.el && txt ) {
+            this.el.innerHTML = txt;
+        }
+    } // MyBase.set()
 
     /**
      * @param {number} z
@@ -200,26 +219,6 @@ class TextBase extends MyBase {
             this.el.innerHTML = this.text;
         }
     } // TextBase.constructor()
-
-    /**
-     *
-     */
-    get() {
-        if ( this.el ) {
-            return this.el.innerHTML;
-        }
-        return "";
-    } // TextBase.get()
-
-    /**
-     *
-     */
-    set(txt) {
-        if ( this.el && txt ) {
-            this.el.innerHTML = txt;
-        }
-    } // TextBase.set()
-
 } // class TextBase
 
 /**
@@ -238,28 +237,35 @@ class ModeButton extends MyBase {
             btn.off();
         });
 
+        this.parent.sound_push2.play();
+        
+        let next_mode = "???";
         if ( this.parent.mode == "READY" ) {
             this.parent.mode = "SET";
             this.parent.ud_button.forEach(btn => {
                 btn.on();
             });
-
+            next_mode = "READY";
         } else if ( this.parent.mode == "SET" ) {
             this.parent.mode = "READY";
+            next_mode = "SET";
         } else if ( this.parent.mode == "p0" || this.parent.mode == "p1" ) {
             this.parent.mode = "PAUSE";
             for (let i=0; i < 2; i++) {
                 this.parent.player[i].pause();
             }
+            next_mode = "RESET";
         } else if ( this.parent.mode == "PAUSE" ) {
             this.parent.mode = "READY";
             for (let i=0; i < 2; i++) {
                 this.parent.player[i].reset();
             }
+            next_mode = "SET";
         } else {
             console.log(`${this.constructor.name}.on_mouse_xy():`
                         + `unknown mode:${this.parent.mode}`);
         }
+        this.set(next_mode);
         console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
                     + `mode->${this.parent.mode}`);
     } // ModeButton.on_mouse_down_xy()
@@ -298,6 +304,13 @@ class SetButton extends MyBase {
     on_mouse_down_xy(x, y) {
         console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
                     + `mode=${this.parent.mode}`);
+
+        if ( this.parent.mode != "SET" ) {
+            console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
+                        + " .. ignored");
+            return;
+        }
+        
         let target_val = this.target_timer.msec0;
         let prev_target_val = target_val;
         console.log(`target_val=${target_val}`);
@@ -570,6 +583,7 @@ class PlayerArea extends MyBase {
                 this.limit_timer.resume();
             }
             this.el.style.backgroundColor = '#FFA';
+            this.opponent.el.style.backgroundColor = '#AAA';
         }
         if ( this.limit_timer.active ) {
             this.limit_timer.update();
@@ -579,8 +593,10 @@ class PlayerArea extends MyBase {
                 this.limit_timer.update();
                 this.timeout = true;
                 this.parent.mode = "PAUSE";
+                this.parent.btn_mode.set("RESET");
             }
             this.el.style.backgroundColor = '#FCC';
+            this.opponent.el.style.backgroundColor = '#AAA';
         }
     } // PlayerArea.update()
 
@@ -593,20 +609,17 @@ class PlayerArea extends MyBase {
             return;
         }
 
-
         this.el.style.backgroundColor = "#4F4";
 
         if ( this.active || ( ! this.active && ! this.opponent.active ) ) {
-            this.pause();
-            /*
-            this.delay_timer.reset();
-            this.update();
-            */
-            this.opponent.delay_timer.reset();
-            this.opponent.resume();
             this.parent.sound_push1.play();
 
+            this.pause();
+            this.opponent.delay_timer.reset();
+            this.opponent.resume();
+
             this.parent.mode = this.opponent.player;
+            this.parent.btn_mode.set("PAUSE");
             console.log(`${this.constructor.name}.on_mouse_down_xy():`
                         + `mode=${this.parent.mode}`);
         } else {
@@ -646,10 +659,13 @@ class ClockBase extends MyBase {
                            this.delay_sec[1], this.limit_sec[1])
         ];
         this.player[0].set_opponent(this.player[1]);
+        this.player[0].set_z(50);
         this.player[1].set_opponent(this.player[0]);
+        this.player[1].set_z(50);
 
         // buttons
         this.btn_mode = new ModeButton(this, "btn-mode");
+        this.btn_mode.set("SET");
 
         this.btn_p0_delay_up   = new SetButton(this, "p0", "delay", "up");
         this.btn_p0_delay_down = new SetButton(this, "p0", "delay", "down");
@@ -778,13 +794,15 @@ const update_clock = () => {
             clockBase.player[i].update();
         }
     }
-};
+}; // update_clock()
 
 /**
  *
  */
 window.onload = () => {
     console.log(`window.onload()>start`);
+
+    new TextBase("version-str", `${MY_NAME}, Version ${VERSION}`);
 
     clockBase = new ClockBase("clock-base", 0, 0,
                                document.documentElement.clientWidth,
