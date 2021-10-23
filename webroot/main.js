@@ -1,5 +1,5 @@
 /**
- * (c)2021 Yoichi Tanibayashi
+ * Copyright (c) 2021 Yoichi Tanibayashi
  *
  *=====================================================
  * ### Class inheritance tree ###
@@ -41,7 +41,7 @@
  *=====================================================
  */
 const MY_NAME = "Ytani Backgammon Clock";
-const VERSION = "0.2.1-cur";
+const VERSION = "0.2.2";
 
 const UPDATE_INTERVAL = 27; // msec
 
