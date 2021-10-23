@@ -241,14 +241,14 @@ class ModeButton extends MyBase {
         
         let next_mode = "???";
         if ( this.parent.mode == "READY" ) {
-            this.parent.mode = "SET";
+            this.parent.mode = "SETTING";
             this.parent.ud_button.forEach(btn => {
                 btn.on();
             });
             next_mode = "READY";
-        } else if ( this.parent.mode == "SET" ) {
+        } else if ( this.parent.mode == "SETTING" ) {
             this.parent.mode = "READY";
-            next_mode = "SET";
+            next_mode = "SETTING";
         } else if ( this.parent.mode == "p0" || this.parent.mode == "p1" ) {
             this.parent.mode = "PAUSE";
             for (let i=0; i < 2; i++) {
@@ -260,11 +260,12 @@ class ModeButton extends MyBase {
             for (let i=0; i < 2; i++) {
                 this.parent.player[i].reset();
             }
-            next_mode = "SET";
+            next_mode = "SETTING";
         } else {
             console.log(`${this.constructor.name}.on_mouse_xy():`
                         + `unknown mode:${this.parent.mode}`);
         }
+        this.parent.cur_mode.set(this.parent.mode);
         this.set(next_mode);
         console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
                     + `mode->${this.parent.mode}`);
@@ -305,7 +306,7 @@ class SetButton extends MyBase {
         console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
                     + `mode=${this.parent.mode}`);
 
-        if ( this.parent.mode != "SET" ) {
+        if ( this.parent.mode != "SETTING" ) {
             console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
                         + " .. ignored");
             return;
@@ -571,39 +572,39 @@ class PlayerArea extends MyBase {
     update() {
         if ( this.delay_timer.active ) {
             this.delay_timer.update();
+            this.el.style.backgroundColor = '#FFA';
+            this.opponent.el.style.backgroundColor = '#AAA';
             if (this.delay_timer.msec <= 0) {
                 this.delay_timer.pause();
                 this.limit_timer.msec += this.delay_timer.msec;
-                console.log(`${this.delay_timer.msec}, ${this.limit_timer.msec}`);
 
                 this.delay_timer.msec = 0;
                 this.delay_timer.update();
-                console.log(`${this.delay_timer.msec}`);
 
                 this.limit_timer.resume();
             }
-            this.el.style.backgroundColor = '#FFA';
-            this.opponent.el.style.backgroundColor = '#AAA';
         }
         if ( this.limit_timer.active ) {
             this.limit_timer.update();
+            this.el.style.backgroundColor = '#FCC';
+            this.opponent.el.style.backgroundColor = '#AAA';
             if ( this.limit_timer.msec <= 0 ) {
                 this.limit_timer.pause();
                 this.limit_timer.msec = 0;
                 this.limit_timer.update();
                 this.timeout = true;
                 this.parent.mode = "PAUSE";
+                this.parent.cur_mode.set(this.parent.mode);
                 this.parent.btn_mode.set("RESET");
+                this.el.style.backgroundColor = '#F00';
             }
-            this.el.style.backgroundColor = '#FCC';
-            this.opponent.el.style.backgroundColor = '#AAA';
         }
     } // PlayerArea.update()
 
     on_mouse_down_xy(x, y) {
         console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
                     + `mode=${this.parent.mode}`);
-        if ( this.parent.mode == "SET" ) {
+        if ( this.parent.mode == "SETTING" ) {
             console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
                         + ` ... ignored`);
             return;
@@ -619,6 +620,7 @@ class PlayerArea extends MyBase {
             this.opponent.resume();
 
             this.parent.mode = this.opponent.player;
+            this.parent.cur_mode.set(`${this.parent.mode}`);
             this.parent.btn_mode.set("PAUSE");
             console.log(`${this.constructor.name}.on_mouse_down_xy():`
                         + `mode=${this.parent.mode}`);
@@ -637,6 +639,39 @@ class PlayerArea extends MyBase {
 /**
  *
  */
+class SoundBase {
+    constructor(parent, soundfile) {
+        console.log("SoundBase("
+                    + `soundfile=${soundfile}`);
+        this.parent = parent;
+        this.soundfile = soundfile;
+        this.audio = new Audio(this.soundfile);
+    } // SoundBase.constructor()
+
+    /**
+     * 
+     */
+    play(mute=false) {
+        if ( this.parent.sound_switch ) {
+            console.log(`soundfile=${this.soundfile}`);
+
+            // 以下、黒魔術 !?
+            let a = this.audio;
+            setTimeout(function() {
+                a.play();
+            }, 1);
+            this.parent.load_allsounds(); // 何故か必要!?
+
+            return true;
+        } else {
+            return false;
+        }
+    } // SoundBase.play()
+} // class SoundBase
+
+/**
+ *
+ */
 class ClockBase extends MyBase {
     /*
      * @param {string} id - div tag id
@@ -648,8 +683,6 @@ class ClockBase extends MyBase {
 
         this.delay_sec = [12, 12];
         this.limit_sec = [12 * 60, 12 * 60];
-
-        this.mode = "READY";
 
         // players
         this.player = [
@@ -664,9 +697,6 @@ class ClockBase extends MyBase {
         this.player[1].set_z(50);
 
         // buttons
-        this.btn_mode = new ModeButton(this, "btn-mode");
-        this.btn_mode.set("SET");
-
         this.btn_p0_delay_up   = new SetButton(this, "p0", "delay", "up");
         this.btn_p0_delay_down = new SetButton(this, "p0", "delay", "down");
         this.btn_p0_limit_up   = new SetButton(this, "p0", "limit", "up");
@@ -691,6 +721,8 @@ class ClockBase extends MyBase {
             btn.off();
         });
 
+        this.btn_mode = new ModeButton(this, "btn-mode");
+
         // sounds
         this.sound_push1 = new SoundBase(this, SOUND_PUSH1);
         this.sound_push2 = new SoundBase(this, SOUND_PUSH2);
@@ -698,6 +730,14 @@ class ClockBase extends MyBase {
         this.sound_switch = true;
         
         this.active = false;
+
+        // cur-mode
+        this.cur_mode = new TextBase("cur-mode");
+
+        // set initial mode
+        this.mode = "READY";
+        this.btn_mode.on_mouse_down_xy(0, 0);
+        this.btn_mode.on_mouse_up_xy(0, 0);
     } // ClockBase.constructor()
 
     /**
@@ -750,39 +790,6 @@ class ClockBase extends MyBase {
     
 } // class ClockBase
 
-/**
- *
- */
-class SoundBase {
-    constructor(parent, soundfile) {
-        console.log("SoundBase("
-                    + `soundfile=${soundfile}`);
-        this.parent = parent;
-        this.soundfile = soundfile;
-        this.audio = new Audio(this.soundfile);
-    } // SoundBase.constructor()
-
-    /**
-     * 
-     */
-    play(mute=false) {
-        if ( this.parent.sound_switch ) {
-            console.log(`soundfile=${this.soundfile}`);
-
-            // 以下、黒魔術 !?
-            let a = this.audio;
-            setTimeout(function() {
-                a.play();
-            }, 1);
-            this.parent.load_allsounds(); // 何故か必要!?
-
-            return true;
-        } else {
-            return false;
-        }
-    } // SoundBase.play()
-} // class SoundBase
-
 let clockBase;
 
 /**
@@ -802,11 +809,11 @@ const update_clock = () => {
 window.onload = () => {
     console.log(`window.onload()>start`);
 
-    new TextBase("version-str", `${MY_NAME}, Version ${VERSION}`);
-
     clockBase = new ClockBase("clock-base", 0, 0,
                                document.documentElement.clientWidth,
                                document.documentElement.clientHeight);
     
+    let version_str = new TextBase("version-str", `${MY_NAME}, Version ${VERSION}`);
+
     setInterval(update_clock, UPDATE_INTERVAL);
 }; // window.onload
