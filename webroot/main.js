@@ -813,7 +813,7 @@ window.onload = () => {
                                document.documentElement.clientWidth,
                                document.documentElement.clientHeight);
     
-    let version_str = new TextBase("version-str", `${MY_NAME}, Version ${VERSION}`);
+    let version_str = new TextBase("version-str", `${MY_NAME}, Ver. ${VERSION}`);
 
     setInterval(update_clock, UPDATE_INTERVAL);
 }; // window.onload
