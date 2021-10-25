@@ -41,7 +41,7 @@
  *=====================================================
  */
 const MY_NAME = "Ytani Backgammon Clock";
-const VERSION = "0.2.3";
+const VERSION = "0.2.4-cur";
 
 const UPDATE_INTERVAL = 27; // msec
 
