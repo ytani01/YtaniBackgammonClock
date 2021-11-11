@@ -762,13 +762,13 @@ class ClockBase extends MyBase {
     change_turn() {
         this.player_timer[this.turn].update();
         this.player_timer[this.turn].pause();
-        console.log(`${this.player_timer[this.turn].str()}`);
+        console.log(`change_turn> ${this.player_timer[this.turn].str()}`);
 
         this.set_turn(1 - this.turn);
         if ( this.active ) {
             this.player_timer[this.turn].start();
         }
-        console.log(`${this.player_timer[this.turn].str()}`);
+        console.log(`change_turn> ${this.player_timer[this.turn].str()}`);
     } // ClockBase.change_turn()
 
     /**
