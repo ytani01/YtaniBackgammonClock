@@ -4,6 +4,10 @@ Simple backgammon clock
 
 ![](docs/YtaniBackgammonClock0.png)
 
+## Try using!
+
+[YtaniBackgammonClock](https://www.ytani.net/ytbgclock/)
+
 ## 概要
 
 バックギャモン用のシンプルな対局時計です。
