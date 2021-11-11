@@ -1,5 +1,4 @@
-![](docs/YtaniBackgammonClock1.png)
-![](docs/YtaniBackgammonClock2.png)
+![](docs/YtaniBackgammonClock0.png)
 
 # YtaniBackgammonClock
 
