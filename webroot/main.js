@@ -237,7 +237,7 @@ class ModeButton extends MyBase {
             btn.off();
         });
 
-        this.parent.sound_push2.play();
+        this.parent.sound_push1.play();
         
         let next_mode = "???";
         if ( this.parent.mode == "READY" ) {
@@ -305,6 +305,8 @@ class SetButton extends MyBase {
     on_mouse_down_xy(x, y) {
         console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
                     + `mode=${this.parent.mode}`);
+
+        this.parent.sound_push2.play();
 
         if ( this.parent.mode != "SETTING" ) {
             console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`

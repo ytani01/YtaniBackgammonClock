@@ -28,13 +28,13 @@
   </head>
   <body style="background-color: #DDD;">
     <div id="clock-base" class="container-fluid p-0">
-      <div class="row p-2 fw-bold">
+      <div class="row p-2 fw-bold bg-info">
         <div class="col-3 text-center fs-1">
 
         </div>
-        <div class="col-6 text-center text-nowrap">
+        <div class="col-6 text-center text-nowrap text-white">
           <div class="fs-3">
-            <span id="cur-mode" class="blink">CUR_MODE</span>
+            <span id="cur-mode" class="blink ">CUR_MODE</span>
           </div>
         </div><!-- col -->
         <div class="col-3 text-center fs-1">
@@ -44,8 +44,10 @@
       <div class="row p-3"><!-- row -->
         <div class="col-6 fw-bold">
 
-          <div id="p0" class="container
-                              border border-primary border-5 rounded-pill">
+          <div id="p0"
+               class="container
+                      border border-primary border-5 rounded-pill
+                      shadow">
 
             <div class="row border-primary border-bottom border-1">
               <div class="col-12 col-sm-3 text-center">
@@ -87,8 +89,10 @@
 
         <div class="col-6 fw-bold">
 
-          <div id="p1" class="container
-                              border border-primary border-5 rounded-pill">
+          <div id="p1"
+               class="container
+                      border border-primary border-5 rounded-pill
+                      shadow">
 
             <div class="row border-primary border-bottom border-1">
               <div class="col-12 col-sm-3 text-center">
@@ -128,10 +132,16 @@
         </div><!-- col -->
       </div><!-- row -->
       <div class="row p-2">
-        <div class="col text-center">
-          <div id="btn-mode" class="btn btn-primary rounded-pill">
+        <div class="col-4">
+        </div>
+        <div class="col-4 text-center">
+          <div id="btn-mode"
+               class="btn-lg btn-primary rounded-pill
+                      shadow-sm">
             BTN_MODE</div>
         </div><!-- col -->
+        <div class="col-4">
+        </div>
       </div><!-- row -->
       <div class="row p-2 fw-bold
                   border-top border-2 border-primary">
