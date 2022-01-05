@@ -36,7 +36,7 @@
         </div>
         <div class="col-6 text-center text-nowrap"
              style="color: #FF0;">
-          <div class="fs-1">
+          <div class="fs-3">
             <span id="cur-mode">CUR_MODE</span>
           </div>
         </div><!-- col -->
@@ -46,78 +46,67 @@
       </div><!-- row -->
 
       <!-- clock --->
-      <div class="row m-0">
-        <div class="col-6 p-0">
-          <div class="container-fluid p-0">
-            <div class="row">
+      <div class="row">
+        <div class="col-5 p-0 text-center clock">
 
-              <div class="col-12 p-0 text-start">
-                <span id="p0-delay-up" class="fs-5">
-                  <i class="fas fa-arrow-circle-up"></i></span>
-                <div class="clock">
-                  <span id="p0-delay-sec" class="fs-4">
-                    012</span>
-                  <span id="p0-delay-sec2" class="fs-6">
-                    00</span>
-                </div>
-                <span id="p0-delay-down" class="fs-5">
-                  <i class="fas fa-arrow-circle-down"></i></span>
-              </div><!-- col -->
-
-            </div><!-- row -->
-            <div class="row">
-
-              <div class="col-12 p-0 text-start">
-                <span id="p0-limit-up" class="fs-4">
-                  <i class="fas fa-arrow-circle-up"></i></span>
-                <div class="clock">
-                  <span id="p0-limit-sec" class="fs-1">
-                    12:00</span>
-                  <span id="p0-limit-sec2" class="fs-4 clock">
-                    00</span>
-                </div>
-                <span id="p0-limit-down" class="fs-4">
-                  <i class="fas fa-arrow-circle-down"></i></span>
-              </div><!-- col -->
-
-            </div><!-- row -->
-          </div><!-- container -->
-        </div><!-- col -->
-
-        <div class="col-6 p-0">
           <div class="container-fluid p-0">
             <div class="row m-0">
+              <div class="col-12 p-0 text-start">
 
-              <div class="col-12 p-0 text-end">
-                <span id="p1-delay-up" class="fs-5">
+                <span id="p0-delay-up" class="fs-6">
                   <i class="fas fa-arrow-circle-up"></i></span>
-                <div class="clock">
-                  <span id="p1-delay-sec" class="fs-4">
-                    012</span>
-                  <span id="p1-delay-sec2" class="fs-6">
-                    00</span>
-                </div>
-                <span id="p1-delay-down" class="fs-5">
+                <span id="p0-delay-sec"  class="fs-4">012</span>
+                <span id="p0-delay-sec2" class="fs-6">00</span>
+                <span id="p0-delay-down" class="fs-6">
                   <i class="fas fa-arrow-circle-down"></i></span>
-              </div><!-- col -->
 
-              <div class="col-12 p-0 text-end">
-                <span id="p1-limit-up" class="fs-4">
+              </div><!-- col -->
+            </div><!-- row -->
+            <div class="row m-0">
+              <div class="col-12 p-0 text-start">
+
+                <span id="p0-limit-up" class="fs-6">
                   <i class="fas fa-arrow-circle-up"></i></span>
-                <div class="clock">
-                  <span id="p1-limit-sec" class="fs-1">
-                    12:00</span>
-                  <span id="p1-limit-sec2" class="fs-4">
-                    00</span>
-                </div>
-                <span id="p1-limit-down" class="fs-4">
+                <span id="p0-limit-sec"  class="fs-2">12:00</span>
+                <span id="p0-limit-sec2" class="fs-4">00</span>
+                <span id="p0-limit-down" class="fs-6">
                   <i class="fas fa-arrow-circle-down"></i></span>
-              </div><!-- col -->
 
+              </div><!-- col -->
             </div><!-- row -->
           </div><!-- container -->
         </div><!-- col -->
 
+        <div class="col-2">&nbsp;</div>
+        
+        <div class="col-5 p-0 text-center clock">
+          <div class="container-fluid p-0">
+            <div class="row m-0">
+              <div class="col-12 p-0 text-start">
+                <span id="p1-delay-up" class="fs-6">
+                  <i class="fas fa-arrow-circle-up"></i></span>
+                <span id="p1-delay-sec"  class="fs-4">012</span>
+                <span id="p1-delay-sec2" class="fs-6">00</span>
+                <span id="p1-delay-down" class="fs-6">
+                  <i class="fas fa-arrow-circle-down"></i></span>
+              </div><!-- col -->
+            </div><!-- row -->
+            
+            <div class="row m-0">
+              <div class="col-12 p-0 text-start">
+
+                <span id="p1-limit-up" class="fs-6">
+                  <i class="fas fa-arrow-circle-up"></i></span>
+                <span id="p1-limit-sec"  class="fs-2">12:00</span>
+                <span id="p1-limit-sec2" class="fs-4">00</span>
+                <span id="p1-limit-down" class="fs-6">
+                  <i class="fas fa-arrow-circle-down"></i></span>
+
+              </div><!-- col -->
+            </div><!-- row -->
+          </div><!-- container -->
+
+        </div><!-- col -->
       </div><!-- row -->
 
       <!-- buttons -->
@@ -126,11 +115,12 @@
           <div id="p0"
                class="container
                       btn
-                      text-center fs-1">
+                      text-center fs-1"
+               style="background-color: #AAA;">
             <div class="row">
               <div class="col-12 col-sm-2">&nbsp;</div>
               <div class="col-12 col-sm-8">
-                Player0
+                &nbsp;
               </div>
               <div class="col-12 col-sm-2">&nbsp;</div>
             </div>
@@ -145,7 +135,7 @@
             <div class="row">
               <div class="col-12 col-sm-2">&nbsp;</div>
               <div class="col-12 col-sm-8">
-                Player1
+                &nbsp;
               </div>
               <div class="col-12 col-sm-2">&nbsp;</div>
             </div>
@@ -167,7 +157,7 @@
       </div><!-- row -->
 
       <!-- footer -->
-      <div class="row p-0 fw-bold"
+      <div class="row p-0 mt-2 fw-bold"
            style="color:#FFF; background-color:#853;">
         <div id="version-str" class="col m-0 text-nowrap text-start">
           Ytani Backgammon Clock, Ver. XXX

@@ -41,7 +41,7 @@
  *=====================================================
  */
 const MY_NAME = "Ytani Backgammon Clock";
-const VERSION = "0.3.0-cur";
+const VERSION = "0.3.1-cur";
 
 const UPDATE_INTERVAL = 29; // msec
 
@@ -525,6 +525,7 @@ class PlayerArea extends MyBase {
         this.player = player;
         this.delay_sec = delay_sec;
         this.limit_sec = limit_sec;
+        this.def_bgcolor = "#DDD";
 
         this.active = false;
         this.timerout = false;
@@ -571,7 +572,7 @@ class PlayerArea extends MyBase {
         this.active = false;
         this.delay_timer.reset();
         this.limit_timer.reset();
-        this.el.style.backgroundColor = '#EEE';
+        this.el.style.backgroundColor = this.def_bgcolor;
     } // PlayerArea.reset()
 
     /**
@@ -640,7 +641,7 @@ class PlayerArea extends MyBase {
     on_mouse_up_xy(x, y) {
         console.log(`${this.constructor.name}.on_mouse_up_xy(${x}, ${y})`);
         this.el.style.backgroundColor = "transparent";
-        this.el.style.backgroundColor = '#EEE';
+        this.el.style.backgroundColor = this.def_bgcolor;
     } // PlayerArea.on_mouse_up_xy()
 } // class PlayerArea
 
