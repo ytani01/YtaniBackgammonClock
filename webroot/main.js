@@ -41,9 +41,9 @@
  *=====================================================
  */
 const MY_NAME = "Ytani Backgammon Clock";
-const VERSION = "0.2.4-cur";
+const VERSION = "0.3.0-cur";
 
-const UPDATE_INTERVAL = 27; // msec
+const UPDATE_INTERVAL = 29; // msec
 
 const SOUND_PUSH1 = "data/push1.mp3";
 const SOUND_PUSH2 = "data/push2.mp3";
@@ -229,6 +229,12 @@ class ModeButton extends MyBase {
         super(id);
         this.parent = parent;
     } // ModeButton.constructor()
+
+    mode2sym(mode) {
+        if ( mode == "SETTING" ) {
+            return "<i class='fas fa-cog'></i>'";
+        }
+    }
 
     on_mouse_down_xy(x, y) {
         console.log(`${this.constructor.name}.on_mouse_down_xy(${x}, ${y}):`
@@ -574,8 +580,8 @@ class PlayerArea extends MyBase {
     update() {
         if ( this.delay_timer.active ) {
             this.delay_timer.update();
-            this.el.style.backgroundColor = '#FFA';
-            this.opponent.el.style.backgroundColor = '#AAA';
+            this.el.style.backgroundColor = '#FF9';
+            this.opponent.el.style.backgroundColor = '#555';
             if (this.delay_timer.msec <= 0) {
                 this.delay_timer.pause();
                 this.limit_timer.msec += this.delay_timer.msec;
@@ -588,8 +594,8 @@ class PlayerArea extends MyBase {
         }
         if ( this.limit_timer.active ) {
             this.limit_timer.update();
-            this.el.style.backgroundColor = '#FCC';
-            this.opponent.el.style.backgroundColor = '#AAA';
+            this.el.style.backgroundColor = '#F88';
+            this.opponent.el.style.backgroundColor = '#555';
             if ( this.limit_timer.msec <= 0 ) {
                 this.limit_timer.pause();
                 this.limit_timer.msec = 0;

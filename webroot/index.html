@@ -26,16 +26,18 @@
 
     <title>Ytani Backgammon Clock</title>
   </head>
-  <body style="background-color: #DDD;">
+  <body style="background-color: #C85;">
     <div id="clock-base" class="container">
       <!-- header -->
-      <div class="row p-2 fw-bold bg-info">
+      <div class="row p-0 fw-bold"
+           style="color:whilte; background-color:#853;">
         <div class="col-3 text-center fs-1">
 
         </div>
-        <div class="col-6 text-center text-nowrap text-white">
-          <div class="fs-3">
-            <span id="cur-mode" class="blink ">CUR_MODE</span>
+        <div class="col-6 text-center text-nowrap"
+             style="color: #FF0;">
+          <div class="fs-1">
+            <span id="cur-mode">CUR_MODE</span>
           </div>
         </div><!-- col -->
         <div class="col-3 text-center fs-1">
@@ -47,30 +49,34 @@
       <div class="row m-0">
         <div class="col-6 p-0">
           <div class="container-fluid p-0">
-            <div class="row m-0">
+            <div class="row">
 
               <div class="col-12 p-0 text-start">
-                <span id="p0-delay-up" class="fs-3">
+                <span id="p0-delay-up" class="fs-5">
                   <i class="fas fa-arrow-circle-up"></i></span>
-                <span id="p0-delay-sec" class="fs-3">
-                  012</span>
-                <span id="p0-delay-sec2" class="fs-6">
-                  00</span>
-                <span id="p0-delay-down" class="fs-3">
+                <div class="clock">
+                  <span id="p0-delay-sec" class="fs-4">
+                    012</span>
+                  <span id="p0-delay-sec2" class="fs-6">
+                    00</span>
+                </div>
+                <span id="p0-delay-down" class="fs-5">
                   <i class="fas fa-arrow-circle-down"></i></span>
               </div><!-- col -->
 
             </div><!-- row -->
-            <div class="row m-0">
+            <div class="row">
 
               <div class="col-12 p-0 text-start">
-                <span id="p0-limit-up" class="fs-3">
+                <span id="p0-limit-up" class="fs-4">
                   <i class="fas fa-arrow-circle-up"></i></span>
-                <span id="p0-limit-sec" class="fs-1">
-                  12:00</span>
-                <span id="p0-limit-sec2" class="fs-4">
-                  00</span>
-                <span id="p0-limit-down" class="fs-3">
+                <div class="clock">
+                  <span id="p0-limit-sec" class="fs-1">
+                    12:00</span>
+                  <span id="p0-limit-sec2" class="fs-4 clock">
+                    00</span>
+                </div>
+                <span id="p0-limit-down" class="fs-4">
                   <i class="fas fa-arrow-circle-down"></i></span>
               </div><!-- col -->
 
@@ -83,24 +89,28 @@
             <div class="row m-0">
 
               <div class="col-12 p-0 text-end">
-                <span id="p1-delay-up" class="fs-3">
+                <span id="p1-delay-up" class="fs-5">
                   <i class="fas fa-arrow-circle-up"></i></span>
-                <span id="p1-delay-sec" class="fs-3">
-                  012</span>
-                <span id="p1-delay-sec2" class="fs-6">
-                  00</span>
-                <span id="p1-delay-down" class="fs-3">
+                <div class="clock">
+                  <span id="p1-delay-sec" class="fs-4">
+                    012</span>
+                  <span id="p1-delay-sec2" class="fs-6">
+                    00</span>
+                </div>
+                <span id="p1-delay-down" class="fs-5">
                   <i class="fas fa-arrow-circle-down"></i></span>
               </div><!-- col -->
 
               <div class="col-12 p-0 text-end">
-                <span id="p1-limit-up" class="fs-3">
+                <span id="p1-limit-up" class="fs-4">
                   <i class="fas fa-arrow-circle-up"></i></span>
-                <span id="p1-limit-sec" class="fs-1">
-                  12:00</span>
-                <span id="p1-limit-sec2" class="fs-4">
-                  00</span>
-                <span id="p1-limit-down" class="fs-3">
+                <div class="clock">
+                  <span id="p1-limit-sec" class="fs-1">
+                    12:00</span>
+                  <span id="p1-limit-sec2" class="fs-4">
+                    00</span>
+                </div>
+                <span id="p1-limit-down" class="fs-4">
                   <i class="fas fa-arrow-circle-down"></i></span>
               </div><!-- col -->
 
@@ -111,46 +121,54 @@
       </div><!-- row -->
 
       <!-- buttons -->
-      <div class="row p-0">
+      <div class="row p-0" ontouchstart="">
         <div class="col-6 fw-bold">
           <div id="p0"
                class="container
-                      border border-primary border-5 rounded-pill
-                      shadow">
-            <br />
-            <br />
+                      btn
+                      text-center fs-1">
+            <div class="row">
+              <div class="col-12 col-sm-2">&nbsp;</div>
+              <div class="col-12 col-sm-8">
+                Player0
+              </div>
+              <div class="col-12 col-sm-2">&nbsp;</div>
+            </div>
           </div><!-- container -->
 
         </div><!-- col -->
-
         <div class="col-6 fw-bold">
           <div id="p1"
                class="container
-                      border border-primary border-5 rounded-pill
-                      shadow">
-            <br />
-            <br />
+                      btn
+                      text-center fs-1">
+            <div class="row">
+              <div class="col-12 col-sm-2">&nbsp;</div>
+              <div class="col-12 col-sm-8">
+                Player1
+              </div>
+              <div class="col-12 col-sm-2">&nbsp;</div>
+            </div>
           </div><!-- container -->
         </div><!-- col -->
       </div><!-- row -->
 
       <!-- mode button -->
-      <div class="row p-1">
-        <div class="col-4">
-        </div>
-        <div class="col-4 text-center">
-          <div id="btn-mode"
-               class="btn-lg btn-primary rounded-pill
-                      shadow-sm">
-            BTN_MODE</div>
+      <div class="row p-0">
+        <div class="col-3"></div>
+        <div class="col-6 text-center fs-3
+                    btn"
+             style="color: #ffffff; background-color: #999;">
+          <div id="btn-mode">
+            BTN_MODE
+          </div>
         </div><!-- col -->
-        <div class="col-4">
-        </div>
+        <div class="col-3"></div>
       </div><!-- row -->
 
       <!-- footer -->
-      <div class="row p-1 fw-bold
-                  border-top border-2 border-primary">
+      <div class="row p-0 fw-bold"
+           style="color:#FFF; background-color:#853;">
         <div id="version-str" class="col m-0 text-nowrap text-start">
           Ytani Backgammon Clock, Ver. XXX
         </div><!-- col -->
